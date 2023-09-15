@@ -1,7 +1,6 @@
 import random
 import math
 a = 100
-#test to check push
 rows, cols = (a, a)
 board = [[False for i in range (cols)] for j in range (rows)]
 
