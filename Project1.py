@@ -2,7 +2,7 @@ import random
 a = 50
 rows, cols = (a, a)
 board = [[False for i in range (cols)] for j in range (rows)]
-
+#test
 cell = [random.randrange(1, rows-1) for i in range (2)]
 board[cell[0]][cell[1]] = True
 open_cells = [cell]
