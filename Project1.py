@@ -1,6 +1,5 @@
 import random
-import math
-a = 100
+a = 50
 rows, cols = (a, a)
 board = [[False for i in range (cols)] for j in range (rows)]
 
@@ -48,22 +47,32 @@ while True:
 dead_cells_dup = []
 dead_cells = []
 for cell in open_cells:
-    if len(get_neighbours(cell, board)) == 3:
-        dead_cells_dup.append(cell)
-print (f"initial: {dead_cells_dup}")
+    x, y = cell[0], cell[1]
+    if x!=0 and x!= (a-1) and y!=0 and y!=(a-1):
+        if len(get_neighbours(cell, board)) == 3:
+            dead_cells_dup.append(cell)
+    else:
+        if len(get_neighbours(cell, board)) == 2:
+             dead_cells_dup.append(cell)
 
 [dead_cells.append(x) for x in dead_cells_dup if x not in dead_cells]
-print (f"initial: {dead_cells}")
-for i in range(math.floor(len(dead_cells)/2)):
-    dead_cells.remove(random.choice(dead_cells))
 
-print (f"initial: {dead_cells}")
-
-for cell in dead_cells:
-    list = get_neighbours(cell, board)
-    delete_cell = random.choice(list)
-    board[delete_cell[0]][delete_cell[1]] = True
-    
+i = int(len(dead_cells)/2)
+while(i>0 and len(dead_cells)!=0):
+    while True:
+        cell = random.choice(dead_cells)
+        list = get_neighbours(cell, board)
+        if len(list) != 0: 
+            delete_cell = random.choice(list)
+            board[delete_cell[0]][delete_cell[1]] = True
+            dead_cells.remove(cell)
+            i -= 1
+            break
+        else:
+            if len(dead_cells) > 1:
+                dead_cells.remove(cell)
+                continue
+        break
 for row in board:
     for col in row:
         if col is True:
