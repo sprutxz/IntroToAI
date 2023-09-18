@@ -1,11 +1,13 @@
 import random
-a = 50
-rows, cols = (a, a)
-board = [[False for i in range (cols)] for j in range (rows)]
 
-cell = [random.randrange(1, rows-1) for i in range (2)]
+D = 100 #number of rows, cols in the ship grid
+board = [[False for i in range (D)] for j in range (D)] #creation of ship
+
+cell = [random.randrange(1, D-1) for i in range (2)]
 board[cell[0]][cell[1]] = True
 open_cells = [cell]
+
+#method to get neighbours of an opened cell
 def get_neighbours(cell,arr):
     list = []
     row, col = cell[0], cell[1]
@@ -19,6 +21,7 @@ def get_neighbours(cell,arr):
         list.append([row, col-1])
     return list
 
+#method to add two neighbour cells list together
 def extend_list(arr1, arr2, arr3):
     for item in arr2[::-1]:
         if item in arr1:
@@ -31,7 +34,8 @@ def extend_list(arr1, arr2, arr3):
 
 cells_avail_to_open = []
 banned_cells = []
-while True:
+
+while True: #loop keeps opening cells until there are no more to open
     list = get_neighbours(cell, board)
 
     cells_avail_to_open, banned_cells = extend_list(cells_avail_to_open, list, banned_cells)
@@ -44,11 +48,12 @@ while True:
     if len(cells_avail_to_open) == 0:
         break
 
+
 dead_cells_dup = []
 dead_cells = []
-for cell in open_cells:
+for cell in open_cells: #adds deadcells to a list
     x, y = cell[0], cell[1]
-    if x!=0 and x!= (a-1) and y!=0 and y!=(a-1):
+    if x!=0 and x!= (D-1) and y!=0 and y!=(D-1):
         if len(get_neighbours(cell, board)) == 3:
             dead_cells_dup.append(cell)
     else:
@@ -73,6 +78,9 @@ while(i>0 and len(dead_cells)!=0):
                 dead_cells.remove(cell)
                 continue
         break
+
+
+#board printer    
 for row in board:
     for col in row:
         if col is True:
