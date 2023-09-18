@@ -3,6 +3,8 @@ import random
 D = 10 #number of rows, cols in the ship grid
 board = [[False for i in range (D)] for j in range (D)] #creation of ship
 
+Q = 0.5 #Flamability of ship
+
 cell = [random.randrange(1, D-1) for i in range (2)]
 board[cell[0]][cell[1]] = True
 open_cells = [cell]
@@ -95,7 +97,7 @@ for row in board:
     print("|")
 
 for i in range (D+2):
-    print("-", end = "")
+    print("=", end = "")
 print() 
 
 
@@ -105,3 +107,7 @@ class Bot:
         self.row = row
         self.col = col
 
+def spread_risk(Q, K): #method to calculate the probability of fire to spread to adj cells
+    chance = 0.0
+    chance = 1 - (1-Q)**K
+    return chance
