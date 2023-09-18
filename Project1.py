@@ -43,7 +43,7 @@ while True:
     open_cells.append(cell)
     if len(cells_avail_to_open) == 0:
         break
-
+#test
 dead_cells_dup = []
 dead_cells = []
 for cell in open_cells:
