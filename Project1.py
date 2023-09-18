@@ -1,6 +1,6 @@
 import random
 
-D = 100 #number of rows, cols in the ship grid
+D = 10 #number of rows, cols in the ship grid
 board = [[False for i in range (D)] for j in range (D)] #creation of ship
 
 cell = [random.randrange(1, D-1) for i in range (2)]
@@ -80,11 +80,28 @@ while(i>0 and len(dead_cells)!=0):
         break
 
 
-#board printer    
+#board printer
+for i in range (D+2):
+    print("_", end = "")
+print()
+
 for row in board:
+    print("|", end = "")
     for col in row:
         if col is True:
-            print("x", end="")
+            print(" ", end="")
         else:
-            print("o", end="")
-    print()
+            print("O", end="")
+    print("|")
+
+for i in range (D+2):
+    print("-", end = "")
+print() 
+
+
+# The Bot 
+class Bot:
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
+
