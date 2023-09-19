@@ -111,3 +111,4 @@ def spread_risk(Q, K): #method to calculate the probability of fire to spread to
     chance = 0.0
     chance = 1 - (1-Q)**K
     return chance
+
