@@ -1,5 +1,5 @@
 import random
-
+random.seed(10)
 D = 10 #number of rows, cols in the ship grid
 board = [[False for i in range (D)] for j in range (D)] #creation of ship
 
