@@ -1,2 +1,2 @@
 # IntroToAI
-Nikil gets no bitches
+no u
