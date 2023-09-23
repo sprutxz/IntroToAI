@@ -1,5 +1,7 @@
 import random
 random.seed(10)
+D = 10
+Q = 0.5
 class board():
     
     def __init__(self, D): #initialises ship to set row and col value
@@ -97,7 +99,22 @@ class board():
             print("=", end = "")
         print() 
 
-board = board(10)
+board = board(5)
 board.open_ship()
 board.clear_dead_cells()
 board.print_ship()
+
+class Bot:
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
+
+class FireSpread:
+    def __init__(self, Q, K):
+        self.chance = float(1-(1-Q)**K)
+    
+    def print(self):
+        print(self.chance)
+
+fire = FireSpread(Q, 1)
+fire.print()
