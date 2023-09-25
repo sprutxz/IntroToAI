@@ -29,13 +29,13 @@ class board():
         list = []
         row, col = cell[0], cell[1]
         if row != 0 and self.board[row-1][col] == True:
-            list.append([row-1,col])
+            list.append((row-1,col))
         if col+1 != self.D and self.board[row][col+1] == True:
-            list.append([row, col+1])
+            list.append((row, col+1))
         if row+1 != self.D and self.board[row+1][col] == True:
-            list.append([row+1, col])
+            list.append((row+1, col))
         if col != 0 and self.board[row][col-1] == True:
-            list.append([row, col-1])
+            list.append((row, col-1))
         return list
     
     def extend_list(self, arr1, arr2, arr3):
@@ -124,7 +124,7 @@ class Bot:
         self.col = col
     
     def get_pos(self):
-        cell = [self.row, self.col]
+        cell = (self.row, self.col)
         return cell
 
 def fire_spread(Q, K):
@@ -139,7 +139,7 @@ def bfs(board, start, end):
     parent_to_cell = {start : None}
             
     while queue: #convert list to tuple
-        cell = queue.popleft
+        cell = queue.popleft()
         if cell == end:
             break
         neighbours = board.get_open_neighbours(cell)
@@ -162,7 +162,7 @@ def bfs(board, start, end):
     #set parents for each cell to keep track of path
     
 bot = Bot(5,8)
-print(bfs(board, bot.get_pos(), [6,11]))
+print(bfs(board, bot.get_pos(), (6,11)))
 
 fire = fire_spread(Q, 1)
 print(fire)
