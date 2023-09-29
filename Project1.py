@@ -1,9 +1,9 @@
 import random
 from collections import deque
-random.seed(10)
-D = 20
+random.seed(5)
+D = 100
 Q = 0.5
-class board():
+class Board():
     
     def __init__(self, D): #initialises ship to set row and col value
         self.D = D
@@ -94,6 +94,18 @@ class board():
                         dead_cells.remove(cell)
                         continue
                 break
+    
+    def get_open_cells(self):
+        open_cell = []
+        i = 0
+        for row in self.board:
+            j = 0
+            for col in row:
+                if col is True:
+                    open_cell.append((i,j))
+                j += 1
+            i += 1
+        return open_cell
         
     def print_ship(self):
         for i in range (self.D+2):
@@ -112,33 +124,60 @@ class board():
         for i in range (self.D+2):
             print("=", end = "")
         print() 
+        
+    def print_sim(self, fire_cells, bot, button):
+        for i in range (self.D+2):
+            print("_", end = "")
+        print()
+        m = 0
+        for row in self.board:
+            print("|", end = "")
+            n = 0
+            for col in row:
+                if (m,n) in fire_cells:
+                    print("F", end="")
+                elif (m,n) == bot:
+                    print("N", end="")
+                elif (m,n) == button:
+                    print("B", end="")
+                else:
+                    if col is True:
+                        print("X", end="")
+                    else:
+                        print(" ", end="")
+                n += 1
+            print("|")
+            m += 1
 
-board = board(D)
-board.open_ship()
-board.clear_dead_cells()
-board.print_ship()
+        for i in range (self.D+2):
+            print("=", end = "")
+        print() 
 
 class Bot:
-    def __init__(self, row, col):
-        self.row = row
-        self.col = col
+    def __init__(self, cell):
+        self.row = cell[0]
+        self.col = cell[1]
     
     def get_pos(self):
         cell = (self.row, self.col)
         return cell
+    
+    def set_pos(self, cell):
+        self.row = cell[0]
+        self.col = cell[1]
 
 def fire_spread(Q, K):
     chance = float(1-(1-Q)**K)
     return chance
 
-def bfs(board, start, end):
+def bfs(board, start, end, ):
     isVisited = [[False for i in range (D)] for j in range (D)]
     queue = deque()
     isVisited[start[0]][start[1]] = True
     queue.append(start)
     parent_to_cell = {start : None}
             
-    while queue: #convert list to tuple
+    while queue:
         cell = queue.popleft()
         if cell == end:
             break
@@ -157,12 +196,59 @@ def bfs(board, start, end):
         cell = parent_to_cell[cell]
     
     return path[::-1]
-    
-    #pop queue and do the list thing
-    #set parents for each cell to keep track of path
-    
-bot = Bot(5,8)
-print(bfs(board, bot.get_pos(), (6,11)))
 
-fire = fire_spread(Q, 1)
-print(fire)
+class Sim():
+    
+    def __init__(self, bot_cell, fire_cell, button_cell, board): #entries should be tuples
+        self.bot_cell = bot_cell
+        self.fire_cell = fire_cell
+        self.button_cell = button_cell
+        self.board = board
+        
+    def bot1(self):
+        t = 0
+        bot = Bot(self.bot_cell)
+        path = bfs(self.board, self.bot_cell, self.button_cell)
+        fire_cells = [self.fire_cell]
+        disabled_cells = []
+        while (bot.get_pos() != self.button_cell):
+            t+=1
+
+            print(t)
+            if (bot.get_pos() in fire_cells):
+                break
+            
+            bot.set_pos(path.pop(0))
+            
+            for cell in fire_cells:
+                if cell not in disabled_cells:
+                    neighbours = self.board.get_open_neighbours(cell)
+                    L = 0
+                    for neighbour in neighbours:
+                        K = 0
+                        if neighbour in fire_cells:
+                            L += 1
+                            continue
+                        b_neighbours = self.board.get_open_neighbours(neighbour)
+                        for b in b_neighbours:
+                            if b in fire_cells:
+                                K += 1
+
+                        if fire_spread(Q, K) > 0.5:
+                            fire_cells.append(neighbour)
+                        K = 0
+                
+                if L == len(neighbours):
+                    disabled_cells.append(cell)
+
+            self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+            input("Press eneter for to run next time step")
+ 
+board = Board(D)
+board.open_ship()
+board.clear_dead_cells()
+open_cells = board.get_open_cells()
+board.print_ship()
+bot = Bot(random.choice(open_cells))
+sim = Sim(bot.get_pos(),random.choice(open_cells),random.choice(open_cells), board)
+sim.bot1()
