@@ -1,7 +1,7 @@
 import random
 from collections import deque
 random.seed(5)
-D = 100
+D = 10
 Q = 0.5
 class Board():
     
@@ -170,9 +170,10 @@ def fire_spread(Q, K):
     chance = float(1-(1-Q)**K)
     return chance
 
-def bfs(board, start, end, ):
+def bfs(board, start, end, fire_cells):
     isVisited = [[False for i in range (D)] for j in range (D)]
     queue = deque()
+    blocked_cells = fire_cells
     isVisited[start[0]][start[1]] = True
     queue.append(start)
     parent_to_cell = {start : None}
@@ -183,6 +184,8 @@ def bfs(board, start, end, ):
             break
         neighbours = board.get_open_neighbours(cell)
         for neighbour in neighbours:
+            if neighbour in blocked_cells:
+                neighbours.remove(neighbour)
             if isVisited[neighbour[0]][neighbour[1]] == False:
                 isVisited[neighbour[0]][neighbour[1]] = True
                 queue.append(neighbour)
@@ -208,8 +211,8 @@ class Sim():
     def bot1(self):
         t = 0
         bot = Bot(self.bot_cell)
-        path = bfs(self.board, self.bot_cell, self.button_cell)
         fire_cells = [self.fire_cell]
+        path = bfs(self.board, self.bot_cell, self.button_cell, fire_cells)
         disabled_cells = []
         while (bot.get_pos() != self.button_cell):
             t+=1
@@ -250,5 +253,5 @@ board.clear_dead_cells()
 open_cells = board.get_open_cells()
 board.print_ship()
 bot = Bot(random.choice(open_cells))
-sim = Sim(bot.get_pos(),random.choice(open_cells),random.choice(open_cells), board)
+sim = Sim(bot.get_pos(),(5,6),(7,3), board)
 sim.bot1()
