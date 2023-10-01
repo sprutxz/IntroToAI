@@ -1,8 +1,8 @@
 import random
 from collections import deque
 #random.seed(5)
-D = 10
-Q = 0.8
+D = 100
+Q = 0.5
 class Board():
     
     def __init__(self, D): #initialises ship to set row and col value
@@ -257,14 +257,75 @@ class Sim():
                 
             fire_cells.extend(new_fire_cells)
 
-            self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
-            input("Press eneter for to run next time step")
- 
+            #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+            #input("Press eneter for to run next time step")
+            
+        if (bot.get_pos() == self.button_cell):
+            print("bot got to the button and extuinguised the fire")
+            
+    def bot2(self):
+        t = 0
+        bot = Bot(self.bot_cell)
+        fire_cells = [self.fire_cell]
+        self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+        disabled_cells = []
+        while (bot.get_pos() != self.button_cell):
+            t+=1
+
+            print(t)
+            if (bot.get_pos() in fire_cells):
+                self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+                print("bot was consumed by fire!")
+                break
+            
+            if (self.button_cell in fire_cells):
+                self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+                print("button was desstroyed by fire!")
+                break
+            
+            step = (bfs(self.board, bot.get_pos(), self.button_cell, fire_cells) or [None, None]).pop(1)
+            if step != None:
+                bot.set_pos(step)
+            else:
+                self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+                print("No path can be found")
+                break
+            
+            new_fire_cells = []
+            for cell in fire_cells:
+                if cell not in disabled_cells:
+                    neighbours = self.board.get_open_neighbours(cell)
+                    L = 0
+                    for neighbour in neighbours:
+                        K = 0 
+                        if neighbour in fire_cells:
+                            L += 1
+                            continue 
+                        b_neighbours = self.board.get_open_neighbours(neighbour)
+                        for b in b_neighbours:
+                            if b in fire_cells:
+                                K += 1
+
+                        if random.uniform(0,1) <= fire_spread(Q, K):
+                            new_fire_cells.append(neighbour)
+                        K = 0
+                
+                if L == len(neighbours):
+                    disabled_cells.append(cell)
+                
+            fire_cells.extend(new_fire_cells)
+
+            #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+            #input("Press eneter for to run next time step")
+        if (bot.get_pos() == self.button_cell):
+            print("bot got to the button and extuinguised the fire")
+        
+
+
 board = Board(D)
 board.open_ship()
 board.clear_dead_cells()
 open_cells = board.get_open_cells()
 board.print_ship()
-bot = Bot(random.choice(open_cells))
-sim = Sim(bot.get_pos(),random.choice(open_cells),random.choice(open_cells), board)
-sim.bot1()
+sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells), board)
+sim.bot2()
