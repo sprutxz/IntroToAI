@@ -1,7 +1,7 @@
 import random
 from collections import deque
-random.seed(10)
-D = 100
+random.seed(5)
+D = 10
 Q = 0.5
 class Board():
     
@@ -346,9 +346,14 @@ class Sim():
             if step != None:
                 bot.set_pos(step)
             else:
-                self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
-                print("No path can be found")
-                break
+                step = (bfs(self.board, bot.get_pos(), self.button_cell, fire_cells) or [None, None]).pop(1)
+                if step != None:
+                    print("path without avoiding firecells used")
+                    bot.set_pos(step)
+                else:
+                    self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+                    print("No path can be found")
+                    break
             
             new_fire_cells = []
             for cell in fire_cells:
@@ -368,7 +373,7 @@ class Sim():
                         if random.uniform(0,1) <= fire_spread(Q, K):
                             new_fire_cells.append(neighbour)
                             for b in b_neighbours:
-                                if b not in cells_to_avoid:
+                                if b not in cells_to_avoid and b != self.button_cell:
                                     cells_to_avoid.append(b)
                         K = 0
                 
@@ -390,4 +395,4 @@ board.clear_dead_cells()
 open_cells = board.get_open_cells()
 board.print_ship()
 sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells), board)
-sim.bot2()
+sim.bot3()
