@@ -1,7 +1,7 @@
 import random
 from collections import deque
-random.seed(5)
-D = 10
+#random.seed(900)
+D = 100
 Q = 0.5
 class Board():
     
