@@ -274,29 +274,27 @@ class Sim():
         t = 0
         bot = Bot(self.bot_cell)
         fire_cells = [self.fire_cell]
-        self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+        print(Q)
+        print(bot.get_pos())
+        print(self.button_cell)
         disabled_cells = []
         while (bot.get_pos() != self.button_cell):
             t+=1
 
-            print(t)
             if (bot.get_pos() in fire_cells):
-                self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
                 print("bot was consumed by fire!")
-                break
+                return 1
             
             if (self.button_cell in fire_cells):
-                self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
                 print("button was desstroyed by fire!")
-                break
+                return 2
             
             step = (bfs(self.board, bot.get_pos(), self.button_cell, fire_cells) or [None, None]).pop(1)
             if step != None:
                 bot.set_pos(step)
             else:
-                self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
                 print("No path can be found")
-                break
+                return 0
             
             new_fire_cells = []
             for cell in fire_cells:
@@ -363,9 +361,8 @@ class Sim():
                     print("path without avoiding firecells used")
                     bot.set_pos(step)
                 else:
-                    self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
                     print("No path can be found")
-                    break
+                    return 3
             
             new_fire_cells = []
             for cell in fire_cells:
@@ -417,12 +414,12 @@ board.clear_dead_cells()
 open_cells = board.get_open_cells()
 board.print_ship()
 sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells), board)
-results = [[0]*20 for i in range(5)]
+results = [[0]*50 for i in range(10)]
 for i in range (1,11):
     Q = i/10 #q value
     for j in range (50): #50 sims
         sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
-        results[i-1][j] = sim.bot1()
+        results[i-1][j] = sim.bot2()
         
 for row in results:
     for col in row:
