@@ -2,7 +2,7 @@ import random
 from collections import deque
 #random.seed(900)
 D = 100
-Q = 0.5
+Q = 0.8
 class Board():
     
     def __init__(self, D): #initialises ship to set row and col value
@@ -395,4 +395,4 @@ board.clear_dead_cells()
 open_cells = board.get_open_cells()
 board.print_ship()
 sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells), board)
-sim.bot3()
+sim.bot2()
