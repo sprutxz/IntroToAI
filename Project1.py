@@ -1,8 +1,8 @@
 import random
 from collections import deque
 #random.seed(900)
-D = 100
-Q = 0.8
+#random.seed(10)
+D = 75
 class Board():
     
     def __init__(self, D): #initialises ship to set row and col value
@@ -208,28 +208,29 @@ class Sim():
         self.board = board
         
     def bot1(self):
+        print(Q)
         t = 0
         bot = Bot(self.bot_cell)
         fire_cells = [self.fire_cell]
-        self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+        #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
         path = bfs(self.board, self.bot_cell, self.button_cell, fire_cells)
+        print(bot.get_pos())
+        print(self.button_cell)
         
         if path == None:
-            print("No path to bot was found")
-            return
+            print("No path to button was found")
+            return 0
         
         disabled_cells = []
         while (bot.get_pos() != self.button_cell):
             t+=1
-
-            print(t)
             if (bot.get_pos() in fire_cells):
                 print("bot was consumed by fire!")
-                break
+                return 1
             
             if (self.button_cell in fire_cells):
-                print("button was desstroyed by fire!")
-                break
+                print("button was destroyed by fire!")
+                return 2
             
             bot.set_pos(path.pop(0))
             
@@ -250,18 +251,24 @@ class Sim():
 
                         if random.uniform(0,1) <= fire_spread(Q, K):
                             new_fire_cells.append(neighbour)
+                            L += 1
+                            if K == len(b_neighbours):
+                                if neighbour not in disabled_cells:
+                                    disabled_cells.append(neighbour)      
                         K = 0
                 
                 if L == len(neighbours):
-                    disabled_cells.append(cell)
+                    if cell not in disabled_cells:
+                        disabled_cells.append(cell)
                 
             fire_cells.extend(new_fire_cells)
 
-            #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
-            #input("Press eneter for to run next time step")
+            # self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
+            # input("Press eneter for to run next time step")
             
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
+            return 3
             
     def bot2(self):
         t = 0
@@ -386,6 +393,11 @@ class Sim():
             #input("Press eneter for to run next time step")
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
+            
+    def new_sim(self, bot_cell, fire_cell, button_cell):
+        self.bot_cell = bot_cell
+        self.fire_cell = fire_cell
+        self.button_cell = button_cell
         
 
 
@@ -395,4 +407,16 @@ board.clear_dead_cells()
 open_cells = board.get_open_cells()
 board.print_ship()
 sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells), board)
-sim.bot2()
+results = [[0]*20 for i in range(5)]
+for i in range (1,6):
+    Q = i*2/10
+    for j in range (20):
+        sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
+        results[i-1][j] = sim.bot1()
+        
+for row in results:
+    for col in row:
+        print(col, end = "")
+    print()
+# Q= 0.5
+# sim.bot1()
