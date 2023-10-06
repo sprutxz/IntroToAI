@@ -2,7 +2,7 @@ import random
 from collections import deque
 #random.seed(900)
 #random.seed(10)
-D = 75
+D = 100
 class Board():
     
     def __init__(self, D): #initialises ship to set row and col value
@@ -315,10 +315,15 @@ class Sim():
 
                         if random.uniform(0,1) <= fire_spread(Q, K):
                             new_fire_cells.append(neighbour)
+                            L += 1
+                            if K == len(b_neighbours):
+                                if neighbour not in disabled_cells:
+                                    disabled_cells.append(neighbour)      
                         K = 0
                 
                 if L == len(neighbours):
-                    disabled_cells.append(cell)
+                    if cell not in disabled_cells:
+                        disabled_cells.append(cell)
                 
             fire_cells.extend(new_fire_cells)
 
@@ -393,12 +398,17 @@ class Sim():
             #input("Press eneter for to run next time step")
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
+    
+    def bot4(self):
+        
+        return
             
     def new_sim(self, bot_cell, fire_cell, button_cell):
         self.bot_cell = bot_cell
         self.fire_cell = fire_cell
         self.button_cell = button_cell
-        
+    
+    
 
 
 board = Board(D)
@@ -408,9 +418,9 @@ open_cells = board.get_open_cells()
 board.print_ship()
 sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells), board)
 results = [[0]*20 for i in range(5)]
-for i in range (1,6):
-    Q = i*2/10
-    for j in range (20):
+for i in range (1,11):
+    Q = i/10 #q value
+    for j in range (50): #50 sims
         sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
         results[i-1][j] = sim.bot1()
         
