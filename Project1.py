@@ -1,8 +1,8 @@
 import random
 from collections import deque
 #random.seed(900)
-#random.seed(10)
-D = 100
+#random.seed(100)
+D = 85
 class Board():
     
     def __init__(self, D): #initialises ship to set row and col value
@@ -233,30 +233,33 @@ class Sim():
                 return 2
             
             bot.set_pos(path.pop(0))
-            
+            eval = []
             new_fire_cells = []
             for cell in fire_cells:
                 if cell not in disabled_cells:
                     neighbours = self.board.get_open_neighbours(cell)
                     L = 0
                     for neighbour in neighbours:
-                        K = 0 
-                        if neighbour in fire_cells:
-                            L += 1
-                            continue 
-                        b_neighbours = self.board.get_open_neighbours(neighbour)
-                        for b in b_neighbours:
-                            if b in fire_cells:
-                                K += 1
+                        if neighbour not in eval:
+                            K = 0 
+                            if neighbour in fire_cells:
+                                L += 1
+                                continue 
+                            b_neighbours = self.board.get_open_neighbours(neighbour)
+                            for b in b_neighbours:
+                                if b in fire_cells:
+                                    K += 1
 
-                        if random.uniform(0,1) <= fire_spread(Q, K):
-                            new_fire_cells.append(neighbour)
+                            if random.uniform(0,1) <= fire_spread(Q, K):
+                                new_fire_cells.append(neighbour)
+                                if K == len(b_neighbours):
+                                    if neighbour not in disabled_cells:
+                                        disabled_cells.append(neighbour)      
+                            eval.append(neighbour)
+                        
+                        if neighbour in new_fire_cells:
                             L += 1
-                            if K == len(b_neighbours):
-                                if neighbour not in disabled_cells:
-                                    disabled_cells.append(neighbour)      
-                        K = 0
-                
+
                 if L == len(neighbours):
                     if cell not in disabled_cells:
                         disabled_cells.append(cell)
@@ -295,30 +298,32 @@ class Sim():
             else:
                 print("No path can be found")
                 return 0
-            
+            eval = []
             new_fire_cells = []
             for cell in fire_cells:
                 if cell not in disabled_cells:
                     neighbours = self.board.get_open_neighbours(cell)
                     L = 0
                     for neighbour in neighbours:
-                        K = 0 
-                        if neighbour in fire_cells:
-                            L += 1
-                            continue 
-                        b_neighbours = self.board.get_open_neighbours(neighbour)
-                        for b in b_neighbours:
-                            if b in fire_cells:
-                                K += 1
+                        if neighbour not in eval:
+                            K = 0 
+                            if neighbour in fire_cells:
+                                L += 1
+                                continue 
+                            b_neighbours = self.board.get_open_neighbours(neighbour)
+                            for b in b_neighbours:
+                                if b in fire_cells:
+                                    K += 1
 
-                        if random.uniform(0,1) <= fire_spread(Q, K):
-                            new_fire_cells.append(neighbour)
+                            if random.uniform(0,1) <= fire_spread(Q, K):
+                                new_fire_cells.append(neighbour)
+                                if K == len(b_neighbours):
+                                    if neighbour not in disabled_cells:
+                                        disabled_cells.append(neighbour)     
+                            eval.append(neighbour) 
+
+                        if neighbour in new_fire_cells:
                             L += 1
-                            if K == len(b_neighbours):
-                                if neighbour not in disabled_cells:
-                                    disabled_cells.append(neighbour)      
-                        K = 0
-                
                 if L == len(neighbours):
                     if cell not in disabled_cells:
                         disabled_cells.append(cell)
@@ -329,6 +334,7 @@ class Sim():
             #input("Press eneter for to run next time step")
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
+            return 3
         
     def bot3(self):
         t = 0
