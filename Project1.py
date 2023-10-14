@@ -1,11 +1,9 @@
 import random
 import math
-import numpy as np
 import heapq
 from collections import deque
-#random.seed(900)
-#random.seed(50)
-D = 85
+
+D = 85 #setting board dimensions
 
 class Board():
     
@@ -16,7 +14,8 @@ class Board():
         self.board[self.cell[0]][self.cell[1]] = True
         self.open_cells = [self.cell]
 
-    def get_closed_neighbours(self, cell):
+    #method to return surrounding blocked cells of a cell
+    def get_closed_neighbours(self, cell): 
         list = []
         row, col = cell[0], cell[1]
         if row != 0 and self.board[row-1][col] == False:
@@ -29,6 +28,7 @@ class Board():
             list.append([row, col-1])
         return list
     
+    #method to return surrounding open cells of a cell
     def get_open_neighbours(self, cell):
         list = []
         row, col = cell[0], cell[1]
@@ -42,6 +42,7 @@ class Board():
             list.append((row, col-1))
         return list
     
+    
     def extend_list(self, arr1, arr2, arr3):
         for item in arr2[::-1]:
             if item in arr1:
@@ -52,6 +53,7 @@ class Board():
         arr1.extend(arr2)
         return arr1, arr3
     
+    #method to create ship
     def open_ship(self):
         cells_avail_to_open = []
         banned_cells = []
@@ -99,6 +101,7 @@ class Board():
                         continue
                 break
     
+    #method to return all open cells in the ship
     def get_open_cells(self):
         open_cell = []
         i = 0
@@ -111,6 +114,7 @@ class Board():
             i += 1
         return open_cell
     
+    #method to return all closed cells in the ship
     def get_closed_cells(self):
         open_cell = []
         i = 0
@@ -141,6 +145,7 @@ class Board():
             print("=", end = "")
         print() 
         
+    # prints the ship to show where fire_cells, bot and button are located
     def print_sim(self, fire_cells, bot, button):
         for i in range (self.D+2):
             print("_", end = "")
@@ -169,22 +174,25 @@ class Board():
             print("=", end = "")
         print() 
 
+# The bot class creates a bot object and handles its movement
 class Bot:
     def __init__(self, cell):
         self.row = cell[0]
         self.col = cell[1]
     
-    def get_pos(self):
+    def get_pos(self): # returns position
         cell = (self.row, self.col)
         return cell
     
-    def set_pos(self, cell):
+    def set_pos(self, cell): # set's position
         self.row = cell[0]
         self.col = cell[1]
 
+# a function to calculate the probability of fire spreading
 def fire_spread(Q, K):
     chance = float(1-(1-Q)**K)
     return chance
+
 
 def bfs(board, start, end, fire_cells):
     isVisited = [[False for i in range (D)] for j in range (D)]
@@ -215,10 +223,17 @@ def bfs(board, start, end, fire_cells):
     
     return path[::-1]
 
+
+
+# heuristic method takes into account the fire intensity at the cell 
+# and at the goal and returns distance accordingly
+
+# algorithm could be improved by taking into account distance of button from 
+# closest fire cell instead of the fire intensity at the goal
 def heuristic(cell, goal, cell_intensity, goal_intensity):
     distance = ((cell[0] - goal[0]) ** 2 + (cell[1] - goal[1]) ** 2) ** 0.5
     influence1 = distance * (cell_intensity/100)
-    influence2 = 2*(distance * (goal_intensity/100)) #to give a higher priority for riskier paths if fire is closer to button
+    influence2 = 2*(distance * (goal_intensity/100)) # multipplied by 2 to give a higher priority for riskier paths if fire is closer to button
     return influence1+influence2
 
 def a_star(grid, start, goal):
@@ -251,7 +266,7 @@ def a_star(grid, start, goal):
         for neighbor in [(current[0], current[1]-1), (current[0], current[1]+1), (current[0]-1, current[1]), (current[0]+1, current[1])]:
             if (0 <= neighbor[0] < len(grid) and 0 <= neighbor[1] < len(grid[0]) and 
                 grid[neighbor[0]][neighbor[1]] != 100 and grid[neighbor[0]][neighbor[1]] != -1):
-                tentative_g_score = g_score[current] + 0.1  # 1 is the cost to move each  cell
+                tentative_g_score = g_score[current] + 0.1  # 0.1 is the cost to move each  cell
                 x1, y1 = neighbor
 
                 if tentative_g_score < g_score[neighbor]:
@@ -264,7 +279,7 @@ def a_star(grid, start, goal):
 
     return None  # If no path found
 
-
+# calculates intensiy of neighbouring cells to the fire
 def cal_intensity(fire_cells):
     decay = 15
     propagation_limit = 15
@@ -295,7 +310,7 @@ def cal_intensity(fire_cells):
     return grid   
 class Sim():
     
-    def __init__(self, bot_cell, fire_cell, button_cell, board): #entries should be tuples
+    def __init__(self, bot_cell, fire_cell, button_cell, board): #initialising values
         self.bot_cell = bot_cell
         self.fire_cell = fire_cell
         self.button_cell = button_cell
@@ -306,33 +321,35 @@ class Sim():
         t = 0
         bot = Bot(self.bot_cell)
         fire_cells = [self.fire_cell]
-        #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
         path = bfs(self.board, self.bot_cell, self.button_cell, fire_cells)
         print(bot.get_pos())
         print(self.button_cell)
         
-        if path == None:
+        if path == None: #if a path to goal can't be found
             print("No path to button was found")
             return 0
         
-        disabled_cells = []
+        disabled_cells = [] # fire cells that have all its neighbours on fire
+        
         while (bot.get_pos() != self.button_cell):
             t+=1
-            if (bot.get_pos() in fire_cells):
+            if (bot.get_pos() in fire_cells): #if bot is consumed by fire
                 print("bot was consumed by fire!")
                 return 1
             
-            if (self.button_cell in fire_cells):
+            if (self.button_cell in fire_cells): #if button is consumed by fire
                 print("button was destroyed by fire!")
                 return 2
             
             bot.set_pos(path.pop(0))
-            eval = []
+            eval = [] # list to keep track of cell that have been evaluaed to prevent re-evaluation
             new_fire_cells = []
+            
             for cell in fire_cells:
                 if cell not in disabled_cells:
                     neighbours = self.board.get_open_neighbours(cell)
                     L = 0
+                    
                     for neighbour in neighbours:
                         if neighbour not in eval:
                             K = 0 
@@ -363,7 +380,7 @@ class Sim():
             # self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
             # input("Press eneter for to run next time step")
             
-        if (bot.get_pos() == self.button_cell):
+        if (bot.get_pos() == self.button_cell): # bot is successful
             print("bot got to the button and extuinguised the fire")
             return 3
             
@@ -371,10 +388,13 @@ class Sim():
         t = 0
         bot = Bot(self.bot_cell)
         fire_cells = [self.fire_cell]
+        
         print(Q)
         print(bot.get_pos())
         print(self.button_cell)
+        
         disabled_cells = []
+        
         while (bot.get_pos() != self.button_cell):
             t+=1
 
@@ -386,18 +406,22 @@ class Sim():
                 print("button was destroyed by fire!")
                 return 2
             
+            # re run bfs every time step to get new shortest path based on current fire cells
             step = (bfs(self.board, bot.get_pos(), self.button_cell, fire_cells) or [None, None]).pop(1)
             if step != None:
                 bot.set_pos(step)
             else:
                 print("No path can be found")
                 return 0
+            
             eval = []
             new_fire_cells = []
+            
             for cell in fire_cells:
                 if cell not in disabled_cells:
                     neighbours = self.board.get_open_neighbours(cell)
                     L = 0
+                    
                     for neighbour in neighbours:
                         if neighbour not in eval:
                             K = 0 
@@ -426,6 +450,7 @@ class Sim():
 
             #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
             #input("Press eneter for to run next time step")
+            
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
             return 3
@@ -434,11 +459,13 @@ class Sim():
         t = 0
         bot = Bot(self.bot_cell)
         fire_cells = [self.fire_cell]
+        
         print(Q)
         print(bot.get_pos())
         print(self.button_cell)
+        
         disabled_cells = []
-        cells_to_avoid = [self.fire_cell]
+        cells_to_avoid = [self.fire_cell] # list to keep track of cells to avoid including the neighbouring cells of curr fire cells
         cells_to_avoid.extend(self.board.get_open_neighbours(self.fire_cell))
         while (bot.get_pos() != self.button_cell):
             t+=1
@@ -454,19 +481,21 @@ class Sim():
             step = (bfs(self.board, bot.get_pos(), self.button_cell, cells_to_avoid) or [None, None]).pop(1)
             if step != None:
                 bot.set_pos(step)
-            else:
+            else: # avoiding only fire cells incase path can't be found by avoiding neighbour cells
                 step = (bfs(self.board, bot.get_pos(), self.button_cell, fire_cells) or [None, None]).pop(1)
                 if step != None:
                     bot.set_pos(step)
                 else:
                     print("No path can be found")
                     return 0
+                
             eval = []
             new_fire_cells = []
             for cell in fire_cells:
                 if cell not in disabled_cells:
                     neighbours = self.board.get_open_neighbours(cell)
                     L = 0
+                    
                     for neighbour in neighbours:
                         if neighbour not in eval:
                             K = 0 
@@ -485,11 +514,12 @@ class Sim():
                                         disabled_cells.append(neighbour) 
                                 for b in b_neighbours:
                                     if b not in cells_to_avoid and b != self.button_cell:
-                                        cells_to_avoid.append(b)
+                                        cells_to_avoid.append(b) #adding neighbouring cells to avoid list
                             eval.append(neighbour)
 
                         if neighbour in new_fire_cells:
                             L += 1
+                            
                 if L == len(neighbours):
                     if cell not in disabled_cells:
                         disabled_cells.append(cell)
@@ -497,7 +527,8 @@ class Sim():
             fire_cells.extend(new_fire_cells)
 
             #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
-            #input("Press eneter for to run next time step")
+            #input("Press enter for to run next time step")
+            
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
             return 3
@@ -507,14 +538,16 @@ class Sim():
         bot = Bot(self.bot_cell)
         fire_cells = [self.fire_cell]
         disabled_cells = []
+        
         print(Q)
         print(bot.get_pos())
-        print(self.button_cell)        
-        grid = cal_intensity(fire_cells)
+        print(self.button_cell)     
+           
+        grid = cal_intensity(fire_cells) #calculate intensity
         
         while (bot.get_pos() != self.button_cell):
             t+=1
-            #print(t)
+            
             if (bot.get_pos() in fire_cells):
                 print("bot was consumed by fire!")
                 return 1
@@ -523,17 +556,17 @@ class Sim():
                 print("button was destroyed by fire!")
                 return 2
             
-            for cell in self.board.get_closed_cells():
+            for cell in self.board.get_closed_cells(): #setting closed cells as -1
                 x,y = cell
                 grid[x][y] = -1
-            
-            #print(np.matrix(grid))    
+                
             step = (a_star(grid, bot.get_pos(), self.button_cell) or [None,None]).pop(1)
             if step != None:
                 bot.set_pos(step)
             else:
                 print("No path can be found")
                 return 0
+            
             eval = []
             new_fire_cells = []
             
@@ -567,7 +600,8 @@ class Sim():
                 
             fire_cells.extend(new_fire_cells)
 
-            grid = cal_intensity(fire_cells)
+            grid = cal_intensity(fire_cells) #calculating new cell intensities
+            
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
             return 3
@@ -576,18 +610,14 @@ class Sim():
         self.bot_cell = bot_cell
         self.fire_cell = fire_cell
         self.button_cell = button_cell
-    
-    
-    
 
 
 board = Board(D)
 board.open_ship()
 board.clear_dead_cells()
 open_cells = board.get_open_cells()
-board.print_ship()
 sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells), board)
-# sim = Sim((9,5),(6,8),(1,9),board)
+
 
 # results = [[0]*50 for i in range(10)]
 # for i in range (1,11):
@@ -601,11 +631,11 @@ sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open
 #         print(col, end = "")
 #     print()
     
-Q= 0.7
+# Q= 0.7
 # sim.bot4()
 
-result = []
-for i in range (100):
-    sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
-    result.append(sim.bot4())
-print(result)
+# result = []
+# for i in range (100):
+#     sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
+#     result.append(sim.bot4())
+# print(result)
