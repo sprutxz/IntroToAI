@@ -187,7 +187,7 @@ class Bot:
 
 def DFS(start, visited, board):
     
-    while(len(visited) != len(board.get_open_cells)):
+    while(len(visited) != len(board.get_open_cells())):
         visited.append(start)
         neighbours = board.get_open_neighbours(start)
         for x in neighbours:
@@ -195,6 +195,15 @@ def DFS(start, visited, board):
                 DFS(x, visited, board)
     
     return visited
+
+def detection_square(cell):
+    list = []
+    x1,y1 = cell
+    for x in range (x1-K, (x1+K+1)):
+        for y in range (y1-K, (y1+K+1)):
+            list.append((x,y))
+    return list
+
           
         
 class Part1():
@@ -204,18 +213,25 @@ class Part1():
         self.board = board
     
     def Bot1(self):
-        visited = []
+        path = []
+        detection_grid = [[0 for i in range (len(detection_grid))] for j in range (len(detection_grid))]
         leak_detected = False
         bot = Bot(self.bot_cell)
-        path = DFS(self.bot_cell, visited, self.board)
+        path = DFS(self.bot_cell, path, self.board)
         while (leak_detected != True):
             bot.set_pos(path.pop(0))
             
             cells = detection_square(bot.get_pos())
+            for cell in cells:
+                if self.board[cell[0]][cell[1]] == False:
+                    cells.remove(cell)
+
             if self.leak_cell in cells:
+                detection_grid[cell[0][cell[1]]] == 1
                 #set cells in detection square as leak detected
             else:
-                return
+
+            return
                 
         return
     
