@@ -631,11 +631,11 @@ sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open
 #         print(col, end = "")
 #     print()
     
-# Q= 0.7
-# sim.bot4()
+Q= 1.0
+# sim.bot4()ssss
 
-# result = []
-# for i in range (100):
-#     sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
-#     result.append(sim.bot4())
-# print(result)
+result = []
+for i in range (50):
+    sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
+    result.append(sim.bot2())
+print(result)
