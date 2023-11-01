@@ -1,5 +1,8 @@
 import random
+import heapq
+from collections import deque
 
+random.seed(5)
 D = 15
 K = 1
 
@@ -124,6 +127,10 @@ class Board():
                 j += 1
             i += 1
         return open_cell
+    
+    def get_cell_value(self, cell):
+        x, y = cell
+        return self.board[x][y]
         
     def print_ship(self):
         for i in range (self.D+2):
@@ -187,21 +194,47 @@ class Bot:
 
 def DFS(start, visited, board):
     
-    while(len(visited) != len(board.get_open_cells())):
-        visited.append(start)
-        neighbours = board.get_open_neighbours(start)
-        for x in neighbours:
-            if x not in visited:
-                DFS(x, visited, board)
+    visited.append(start)
+    neighbours = board.get_open_neighbours(start)
+    for x in neighbours:
+        if x not in visited:
+            DFS(x, visited, board)
     
     return visited
+
+def BFS(start, leak_locations, board):
+    isVisited = [[False for i in range (D)] for j in range (D)]
+    queue = deque()
+    isVisited[start[0]][start[1]] = True
+    queue.append(start)
+    parent_to_cell = {start : None}      
+    while queue:
+        cell = queue.popleft()
+        if cell in leak_locations:
+            break
+        neighbours = board.get_open_neighbours(cell)
+        for neighbour in neighbours:
+            if isVisited[neighbour[0]][neighbour[1]] == False:
+                isVisited[neighbour[0]][neighbour[1]] = True
+                queue.append(neighbour)
+                parent_to_cell[neighbour] = cell
+                
+    if cell not in leak_locations:  # If destination wasn't reached.
+        return None
+    path = []
+    while cell:
+        path.append(cell)
+        cell = parent_to_cell[cell]
+    
+    return path[::-1]
 
 def detection_square(cell):
     list = []
     x1,y1 = cell
     for x in range (x1-K, (x1+K+1)):
         for y in range (y1-K, (y1+K+1)):
-            list.append((x,y))
+            if x >= 0 and x < D and y >= 0 and y < D:
+                list.append((x,y))
     return list
 
           
@@ -213,8 +246,9 @@ class Part1():
         self.board = board
     
     def Bot1(self):
-        path = []
-        detection_grid = [[0 for i in range (len(detection_grid))] for j in range (len(detection_grid))]
+        path = [] 
+        p_leak_locations = []
+        detection_grid = [[0 for i in range (D)] for j in range (D)]
         leak_detected = False
         bot = Bot(self.bot_cell)
         path = DFS(self.bot_cell, path, self.board)
@@ -223,23 +257,45 @@ class Part1():
             
             cells = detection_square(bot.get_pos())
             for cell in cells:
-                if self.board[cell[0]][cell[1]] == False:
+                if self.board.get_cell_value(cell) == False:
                     cells.remove(cell)
 
             if self.leak_cell in cells:
-                detection_grid[cell[0][cell[1]]] == 1
-                #set cells in detection square as leak detected
+                for cell in cells:
+                    if detection_grid[cell[0]][cell[1]] == 0:
+                        detection_grid[cell[0]][cell[1]] = 2
+                        p_leak_locations.append(cell)
+                leak_detected = True
             else:
+                detection_grid[cell[0]][cell[1]] = 1
 
-            return
-                
-        return
+        while (True):
+            bot.set_pos(BFS(bot.get_pos(), p_leak_locations, self.board).pop(-1))
+            if self.leak_cell != bot.get_pos():
+                p_leak_locations.remove(bot.get_pos())
+            else:
+                break
+    
+        print(f"bot found leak at {bot.get_pos()}")
     
     def Bot2(self):
         return
+    
+class Part2():
+    def __init__(self, bot_cell, leak_cell, board): #initialising values
+        self.bot_cell = bot_cell
+        self.leak_cell = leak_cell
+        self.board = board
+        
+    def Bot3(self):
+        
+    
     
 
 board = Board(D)
 board.open_ship()
 board.clear_dead_cells()
 board.print_ship()
+open_cells = board.get_open_cells()
+part1 = Part1(random.choice(open_cells), random.choice(open_cells), board)
+part1.Bot1()
