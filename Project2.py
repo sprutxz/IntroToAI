@@ -245,7 +245,7 @@ class Part1():
         self.leak_cell = leak_cell
         self.board = board
     
-    def Bot1(self):
+    def Bot1(self): #fix time stamp calculation
         path = [] 
         p_leak_locations = []
         detection_grid = [[0 for i in range (D)] for j in range (D)]
@@ -288,7 +288,7 @@ class Part2():
         self.board = board
         
     def Bot3(self):
-        
+        return
     
     
 
