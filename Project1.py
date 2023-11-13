@@ -377,8 +377,6 @@ class Sim():
                 
             fire_cells.extend(new_fire_cells)
 
-            # self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
-            # input("Press eneter for to run next time step")
             
         if (bot.get_pos() == self.button_cell): # bot is successful
             print("bot got to the button and extuinguised the fire")
