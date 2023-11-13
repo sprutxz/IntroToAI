@@ -448,8 +448,6 @@ class Sim():
                 
             fire_cells.extend(new_fire_cells)
 
-            #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
-            #input("Press eneter for to run next time step")
             
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
@@ -525,8 +523,6 @@ class Sim():
                 
             fire_cells.extend(new_fire_cells)
 
-            #self.board.print_sim(fire_cells,bot.get_pos(),self.button_cell)
-            #input("Press enter for to run next time step")
             
         if (bot.get_pos() == self.button_cell):
             print("bot got to the button and extuinguised the fire")
@@ -631,7 +627,7 @@ sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open
 #     print()
     
 Q= 0.9
-# sim.bot4()ssss
+# sim.bot4()
 
 result = []
 for i in range (100):
