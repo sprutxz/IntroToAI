@@ -1,2 +1,1 @@
 # IntroToAI
-no u
