@@ -1,10 +1,16 @@
 import random
 import heapq
+import math
+import numpy as np
 from collections import deque
+import sys
 
-random.seed(5)
+
+sys.setrecursionlimit(1500)
+random.seed(50)
 D = 15
 K = 1
+alpha = 1
 
 class Board():
     
@@ -192,25 +198,27 @@ class Bot:
         self.row = cell[0]
         self.col = cell[1]
 
-def DFS(start, visited, board):
+def DFS(start, visited, board, t):
     
-    visited.append(start)
+    visited[start] = t
     neighbours = board.get_open_neighbours(start)
     for x in neighbours:
         if x not in visited:
-            DFS(x, visited, board)
-    
-    return visited
+            t += 1
+            t, visited = DFS(x, visited, board, t)
+    t += 1
+    return t, visited
 
-def BFS(start, leak_locations, board):
+def BFS(start, goal_locations, board):
     isVisited = [[False for i in range (D)] for j in range (D)]
-    queue = deque()
     isVisited[start[0]][start[1]] = True
+    queue = deque()
     queue.append(start)
     parent_to_cell = {start : None}      
+    
     while queue:
         cell = queue.popleft()
-        if cell in leak_locations:
+        if cell in goal_locations:
             break
         neighbours = board.get_open_neighbours(cell)
         for neighbour in neighbours:
@@ -219,8 +227,9 @@ def BFS(start, leak_locations, board):
                 queue.append(neighbour)
                 parent_to_cell[neighbour] = cell
                 
-    if cell not in leak_locations:  # If destination wasn't reached.
+    if cell not in goal_locations:  # If destination wasn't reached.
         return None
+    
     path = []
     while cell:
         path.append(cell)
@@ -233,27 +242,115 @@ def detection_square(cell):
     x1,y1 = cell
     for x in range (x1-K, (x1+K+1)):
         for y in range (y1-K, (y1+K+1)):
-            if x >= 0 and x < D and y >= 0 and y < D:
+            if 0 <= x < D and 0 <= y < D:
                 list.append((x,y))
     return list
 
-          
-        
+def calculate_distances(grid, source):
+    rows = D
+    cols = D
+    distances = [[-1] * cols for _ in range(rows)]
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Up, Down, Left, Right
+    queue = deque()
+    queue.append(source)
+    distances[source[0]][source[1]] = 0  # Distance to the source is 0
+
+    while queue:
+        x, y = queue.popleft()
+
+        for dx, dy in directions:
+            new_x, new_y = x + dx, y + dy
+
+            if 0 <= new_x < rows and 0 <= new_y < cols and distances[new_x][new_y] == -1 and grid.get_cell_value((new_x,new_y)) == True:
+                distances[new_x][new_y] = distances[x][y] + 1
+                queue.append((new_x, new_y))
+
+    return distances
+
+def sense(distance):
+    probability_beep = math.exp(-alpha * (distance - 1))
+    return (random.random() < probability_beep)
+
+def move(move_cost, probablity_matrix):
+    max_cost = 99999
+    b_cell = None
+    maxval = None
+    for x, row in enumerate(probablity_matrix):
+        for y, val in enumerate(row):
+            if maxval is None or val > maxval:
+                indices = [(x,y)]
+                maxval = val
+            elif val == maxval:
+                indices.append((x,y))
+    
+    for cell in indices:
+        if move_cost[cell[0]][cell[1]] < max_cost:
+            max_cost = move_cost[cell[0]][cell[1]]
+            b_cell = cell
+        elif move_cost[cell[0]][cell[1]] == max_cost:
+            if random.random() < 0.5:
+                b_cell = cell
+    
+    return b_cell
+
+def beep_update(move_cost, probablity_mat):
+    new_matrix = [[0 for j in range(D)] for i in range(D)]
+    
+    p_beep = sum((probablity_mat[a][b] * math.exp(-alpha * (move_cost[a][b] - 1))) 
+                 for a in range (D) for b in range (D))
+    
+    for x,row in enumerate(probablity_mat):
+        for y,cell in enumerate(row):
+            if cell != 0:
+                new_matrix[x][y] = (cell * math.exp(-alpha * (move_cost[x][y] - 1))) / p_beep
+     
+    return new_matrix
+
+def no_beep_update(move_cost, probablity_mat):
+    new_matrix = [[0 for j in range(D)] for i in range(D)]
+    
+    p_beep = sum((probablity_mat[a][b] * math.exp(-alpha * (move_cost[a][b] - 1))) 
+                 for a in range (D) for b in range (D))
+    p_no_beep = 1-p_beep
+    
+    for x,row in enumerate(probablity_mat):
+        for y,cell in enumerate(row):
+            if cell != 0:
+                new_matrix[x][y] = (cell * 1 - math.exp(-alpha * (move_cost[x][y] - 1))) / p_no_beep
+     
+    return new_matrix        
+
+def bot_movement_update(probablity_mat, bot_pos):
+    new_matrix = [[0 for j in range(D)] for i in range(D)]
+    p_x, p_y = bot_pos
+    p = probablity_mat[p_x][p_y]
+    
+    for x,row in enumerate(probablity_mat):
+        for y,cell in enumerate(row):
+            new_matrix[x][y] = cell/(1-p)
+            
+    return new_matrix
 class Part1():
     def __init__(self, bot_cell, leak_cell, board): #initialising values
         self.bot_cell = bot_cell
         self.leak_cell = leak_cell
         self.board = board
     
-    def Bot1(self): #fix time stamp calculation
-        path = [] 
+    def Bot1(self):
+        path = {}
+        senses = 0
+        moves = 0
+        t = 0
         p_leak_locations = []
         detection_grid = [[0 for i in range (D)] for j in range (D)]
         leak_detected = False
         bot = Bot(self.bot_cell)
-        path = DFS(self.bot_cell, path, self.board)
+        final_t, visited_nodes = DFS(self.bot_cell, path, self.board, t)
+        path = list(visited_nodes.keys())
+        path_of_bot = []
         while (leak_detected != True):
             bot.set_pos(path.pop(0))
+            path_of_bot.append(bot.get_pos())
             
             cells = detection_square(bot.get_pos())
             for cell in cells:
@@ -262,25 +359,81 @@ class Part1():
 
             if self.leak_cell in cells:
                 for cell in cells:
-                    if detection_grid[cell[0]][cell[1]] == 0:
+                    if detection_grid[cell[0]][cell[1]] == 0 and cell != bot.get_pos():
                         detection_grid[cell[0]][cell[1]] = 2
                         p_leak_locations.append(cell)
                 leak_detected = True
             else:
                 detection_grid[cell[0]][cell[1]] = 1
-
+            senses += 1
+        moves = visited_nodes[bot.get_pos()]
+            
         while (True):
-            bot.set_pos(BFS(bot.get_pos(), p_leak_locations, self.board).pop(-1))
+            path = BFS(bot.get_pos(), p_leak_locations, self.board)
+            bot.set_pos(path.pop(-1))
+            moves += len(path)
+            path_of_bot.append(bot.get_pos())
             if self.leak_cell != bot.get_pos():
                 p_leak_locations.remove(bot.get_pos())
             else:
                 break
+            senses += 1
+        
+        t = moves + senses
     
-        print(f"bot found leak at {bot.get_pos()}")
+        print(f"bot found leak at {bot.get_pos()} after {t} steps")
     
-    def Bot2(self):
-        return
+    def Bot2(self):          
+        path = {}
+        senses = 0
+        moves = 0
+        t = 0
+        p_leak_locations = []
+        detection_grid = [[0 for i in range (D)] for j in range (D)]
+        leak_detected = False
+        bot = Bot(self.bot_cell)
+        final_t, visited_nodes = DFS(self.bot_cell, path, self.board, t)
+        path = list(visited_nodes.keys())
+        path_of_bot = []
+        while (leak_detected != True):
+            while(True):
+                move_cell = path.pop(0)
+                if detection_grid[move_cell[0]][move_cell[1]] != 1:
+                    bot.set_pos(move_cell)
+                    path_of_bot.append(bot.get_pos())
+                    moves += len(BFS(bot.get_pos(), [move_cell], self.board))
+                    break
+            
+            cells = detection_square(bot.get_pos())
+            for cell in cells:
+                if self.board.get_cell_value(cell) == False:
+                    cells.remove(cell)
+
+            if self.leak_cell in cells:
+                for cell in cells:
+                    if detection_grid[cell[0]][cell[1]] == 0 and cell != bot.get_pos():
+                        detection_grid[cell[0]][cell[1]] = 2
+                        p_leak_locations.append(cell)
+                leak_detected = True
+            else:
+                detection_grid[cell[0]][cell[1]] = 1
+            senses += 1
+        
+        while (True):
+            path = BFS(bot.get_pos(), p_leak_locations, self.board)
+            bot.set_pos(path.pop(-1))
+            moves += len(path)
+            path_of_bot.append(bot.get_pos())
+            if self.leak_cell != bot.get_pos():
+                p_leak_locations.remove(bot.get_pos())
+            else:
+                break
+            senses += 1
+        
+        t = moves + senses
     
+        print(f"bot found leak at {bot.get_pos()} after {t} steps")
+            
 class Part2():
     def __init__(self, bot_cell, leak_cell, board): #initialising values
         self.bot_cell = bot_cell
@@ -288,7 +441,35 @@ class Part2():
         self.board = board
         
     def Bot3(self):
-        return
+        bot = Bot(self.bot_cell)
+        leak_detected = False
+        len_open_cells = len(self.board.get_open_cells())
+        probabilities = [[0 if self.board.get_cell_value((i,j)) == False 
+                          else 1 / len_open_cells for j in range(D)] for i in range(D)]
+        
+        while (leak_detected != True):
+            move_cost = calculate_distances(self.board, bot.get_pos())
+            distance_to_leak = move_cost[self.leak_cell[0]][self.leak_cell[1]]
+            probabilities = bot_movement_update(probabilities, bot.get_pos())
+            
+            if sense(distance_to_leak):
+                probabilities = beep_update()     
+            else:
+                probabilities = no_beep_update()
+                
+            move_cell = move(move_cost, probabilities) #make better path
+            
+            planned_path = BFS(bot.get_pos(), [move_cell], self.board)
+            
+            t += len(planned_path) - 1
+            
+            for i in planned_path:
+                if i == self.leak_cell:
+                    leak_detected = True
+                else:
+                    probabilities = bot_movement_update()
+                    
+        print(bot.get_pos())
     
     
 
@@ -297,5 +478,5 @@ board.open_ship()
 board.clear_dead_cells()
 board.print_ship()
 open_cells = board.get_open_cells()
-part1 = Part1(random.choice(open_cells), random.choice(open_cells), board)
-part1.Bot1()
+part2 = Part2(random.choice(open_cells), random.choice(open_cells), board)
+part2.Bot3()

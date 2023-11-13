@@ -469,7 +469,6 @@ class Sim():
         cells_to_avoid.extend(self.board.get_open_neighbours(self.fire_cell))
         while (bot.get_pos() != self.button_cell):
             t+=1
-            print(t)
             if (bot.get_pos() in fire_cells):
                 print("bot was consumed by fire!")
                 return 1
@@ -631,11 +630,11 @@ sim = Sim(random.choice(open_cells),random.choice(open_cells),random.choice(open
 #         print(col, end = "")
 #     print()
     
-Q= 1.0
+Q= 0.9
 # sim.bot4()ssss
 
 result = []
-for i in range (50):
+for i in range (100):
     sim.new_sim(random.choice(open_cells),random.choice(open_cells),random.choice(open_cells))
-    result.append(sim.bot2())
+    result.append(sim.bot3())
 print(result)
