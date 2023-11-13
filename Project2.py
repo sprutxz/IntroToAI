@@ -1,14 +1,16 @@
 import random
 import heapq
 import math
+from decimal import *
 import numpy as np
 from collections import deque
 import sys
 
 
 sys.setrecursionlimit(1500)
-random.seed(50)
-D = 15
+getcontext().prec = 300
+#random.seed(50)
+D = 50
 K = 1
 alpha = 1
 
@@ -293,7 +295,7 @@ def move(move_cost, probablity_matrix):
     
     return b_cell
 
-def beep_update(move_cost, probablity_mat):
+def beep_update(move_cost, probablity_mat, senses):
     new_matrix = [[0 for j in range(D)] for i in range(D)]
     
     p_beep = sum((probablity_mat[a][b] * math.exp(-alpha * (move_cost[a][b] - 1))) 
@@ -302,11 +304,11 @@ def beep_update(move_cost, probablity_mat):
     for x,row in enumerate(probablity_mat):
         for y,cell in enumerate(row):
             if cell != 0:
-                new_matrix[x][y] = (cell * math.exp(-alpha * (move_cost[x][y] - 1))) / p_beep
+                new_matrix[x][y] = ((cell * math.exp(-alpha * (move_cost[x][y] - 1))) / p_beep) * senses
      
     return new_matrix
 
-def no_beep_update(move_cost, probablity_mat):
+def no_beep_update(move_cost, probablity_mat, senses):
     new_matrix = [[0 for j in range(D)] for i in range(D)]
     
     p_beep = sum((probablity_mat[a][b] * math.exp(-alpha * (move_cost[a][b] - 1))) 
@@ -316,7 +318,7 @@ def no_beep_update(move_cost, probablity_mat):
     for x,row in enumerate(probablity_mat):
         for y,cell in enumerate(row):
             if cell != 0:
-                new_matrix[x][y] = (cell * 1 - math.exp(-alpha * (move_cost[x][y] - 1))) / p_no_beep
+                new_matrix[x][y] = ((cell * (1 - math.exp(-alpha * (move_cost[x][y] - 1)))) / p_no_beep) * senses
      
     return new_matrix        
 
@@ -441,6 +443,7 @@ class Part2():
         self.board = board
         
     def Bot3(self):
+        t = 0
         bot = Bot(self.bot_cell)
         leak_detected = False
         len_open_cells = len(self.board.get_open_cells())
@@ -453,11 +456,12 @@ class Part2():
             probabilities = bot_movement_update(probabilities, bot.get_pos())
             
             if sense(distance_to_leak):
-                probabilities = beep_update()     
+                probabilities = beep_update(move_cost, probabilities, 1)     
             else:
-                probabilities = no_beep_update()
+                probabilities = no_beep_update(move_cost, probabilities, 1)
+            t += 1
                 
-            move_cell = move(move_cost, probabilities) #make better path
+            move_cell = move(move_cost, probabilities)
             
             planned_path = BFS(bot.get_pos(), [move_cell], self.board)
             
@@ -467,9 +471,48 @@ class Part2():
                 if i == self.leak_cell:
                     leak_detected = True
                 else:
-                    probabilities = bot_movement_update()
+                    probabilities = bot_movement_update(probabilities, bot.get_pos())
                     
         print(bot.get_pos())
+        
+        
+    def Bot4(self):
+        t = 0
+        bot = Bot(self.bot_cell)
+        leak_detected = False
+        len_open_cells = len(self.board.get_open_cells())
+        probabilities = [[0 if self.board.get_cell_value((i,j)) == False 
+                          else 1 / len_open_cells for j in range(D)] for i in range(D)]
+        
+        while (leak_detected != True):
+            move_cost = calculate_distances(self.board, bot.get_pos())
+            distance_to_leak = move_cost[self.leak_cell[0]][self.leak_cell[1]]
+            probabilities = bot_movement_update(probabilities, bot.get_pos())
+            
+            
+            sense_list = []
+            for i in range(5):
+                sense_list.append(sense(distance_to_leak))
+                t += 1
+                
+            senses = sense_list.count(True)
+            
+            if senses > 0:
+                probabilities = beep_update(move_cost, probabilities, senses/(len(sense_list)))     
+            else:
+                probabilities = no_beep_update(move_cost, probabilities, senses/(len(sense_list)))
+                
+            move_cell = move(move_cost, probabilities)
+            
+            planned_path = BFS(bot.get_pos(), [move_cell], self.board)
+            
+            t += len(planned_path) - 1
+            
+            for i in planned_path:
+                if i == self.leak_cell:
+                    leak_detected = True
+                else:
+                    probabilities = bot_movement_update(probabilities, bot.get_pos())
     
     
 
