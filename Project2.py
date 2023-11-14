@@ -775,19 +775,24 @@ class Part3():
             bot.set_pos(planned_path.pop(-1))        
         
     
-    
 
-board = Board(D)
-board.open_ship()
-board.clear_dead_cells()
-board.print_ship()
-open_cells = board.get_open_cells()
-part1 = Part1(random.choice(open_cells), random.choice(open_cells), board)
-#part1.Bot1()
-#part1.Bot2()
+
+for K in range (0,8,2):
+    for i in range(100):
+        if i%100 == 0:
+            board = Board(D)
+            board.open_ship()
+            board.clear_dead_cells()
+        open_cells = board.get_open_cells()
+        bot_location = random.choice(open_cells)
+        open_cells.remove(bot_location)
+        leak_locaion = random.choice(open_cells)
+        part1 = Part1(bot_location, leak_locaion, board)
+        part1.Bot1()
 part2 = Part2(random.choice(open_cells), random.choice(open_cells), board)
 #part2.Bot3()
 #part2.Bot4()
 part3 = Part3(random.choice(open_cells), random.choice(open_cells), random.choice(open_cells), board)
 #part3.Bot5()
 #part3.Bot6()
+#part3.Bot7()
