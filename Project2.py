@@ -14,6 +14,7 @@ D = 50
 K = 1
 alpha = 0.3
 
+
 class Board():
     
     def __init__(self, D): #initialises ship to set row and col value
@@ -273,6 +274,13 @@ def sense(distance):
     probability_beep = math.exp(-alpha * (distance - 1))
     return (random.random() < probability_beep)
 
+def sense_two_leaks(distance1, distance2):
+    beep_probablity_1 = math.exp(-alpha * (distance1 - 1))
+    beep_probablity_2 = math.exp(-alpha * (distance2 - 1))
+    beep_1 = random.random() < beep_probablity_1
+    beep_2 = random.random() < beep_probablity_2
+    return(beep_1 or beep_2)
+    
 def move(move_cost, probablity_matrix):
     max_cost = 99999
     b_cell = None
@@ -294,6 +302,25 @@ def move(move_cost, probablity_matrix):
                 b_cell = cell
     
     return b_cell
+
+def improved_move(move_cost, probability_matrix): #write a condition for equal combined score
+    max_combined_score = -1
+    next_cell = None
+    
+    for x in range(D):
+        for y in range(D):
+            if probability_matrix[x][y] > 0:  # Consider only cells with non-zero probability
+                distance = move_cost[x][y]
+                probability = probability_matrix[x][y]
+                
+                # Experiment with different weightings for distance and probability
+                combined_score = weight_distance * distance + weight_probability * probability
+                
+                if combined_score > max_combined_score:
+                    max_combined_score = combined_score
+                    next_cell = (x, y)
+    
+    return next_cell
 
 def beep_update(move_cost, probablity_mat, senses):
     new_matrix = [[Decimal('0.0') for j in range(D)] for i in range(D)]
@@ -482,8 +509,7 @@ class Part2():
                     probabilities = bot_movement_update(probabilities, i)
                 
             bot.set_pos(planned_path.pop(-1))
-        
-        
+               
     def Bot4(self):
         t = 0
         bot = Bot(self.bot_cell)
@@ -708,7 +734,45 @@ class Part3():
     
         print(f"bot found leaks after {t} steps")
         
-    
+    def Bot7(self):
+        t = 0
+        bot = Bot(self.bot_cell)
+        total_leaks_found = 0
+        leak = [self.first_leak_cell, self.second_leak_cell]
+        len_open_cells = len(self.board.get_open_cells())
+        probabilities = [[Decimal('0.0') if self.board.get_cell_value((i,j)) == False 
+                          else 1 / Decimal(str(len_open_cells)) for j in range(D)] for i in range(D)]
+        
+        while (total_leaks_found<2):
+            move_cost = calculate_distances(self.board, bot.get_pos())
+            distance_to_first_leak = move_cost[self.first_leak_cell[0]][self.first_leak_cell[1]]
+            distance_to_second_leak = move_cost[self.second_leak_cell[0]][self.second_leak_cell[1]]
+            probabilities = bot_movement_update(probabilities, bot.get_pos())
+            
+            if sense_two_leaks(distance_to_first_leak, distance_to_second_leak):
+                probabilities = beep_update(move_cost, probabilities, 1)     
+            else:
+                probabilities = no_beep_update(move_cost, probabilities)
+            t += 1
+                
+            move_cell = move(move_cost, probabilities)
+            
+            planned_path = BFS(bot.get_pos(), [move_cell], self.board)
+            planned_path.pop(0)
+            
+            t += len(planned_path) - 1
+            
+            for i in planned_path:
+                if any(i in [leak]):
+                    leak.remove(i)
+                    total_leaks_found += 1
+                    probabilities = bot_movement_update(probabilities, i)
+                    if total_leaks_found == 2:
+                        bot.set_pos(i)
+                else:
+                    probabilities = bot_movement_update(probabilities, i)
+                
+            bot.set_pos(planned_path.pop(-1))        
         
     
     
@@ -726,4 +790,4 @@ part2 = Part2(random.choice(open_cells), random.choice(open_cells), board)
 #part2.Bot4()
 part3 = Part3(random.choice(open_cells), random.choice(open_cells), random.choice(open_cells), board)
 #part3.Bot5()
-part3.Bot6()
+#part3.Bot6()
