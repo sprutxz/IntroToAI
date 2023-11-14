@@ -371,7 +371,8 @@ class Part1():
                         p_leak_locations.append(cell)
                 leak_detected = True
             else:
-                detection_grid[cell[0]][cell[1]] = 1
+                for cell in cells:
+                    detection_grid[cell[0]][cell[1]] = 1
             senses += 1
         moves = visited_nodes[bot.get_pos()]
             
@@ -384,7 +385,6 @@ class Part1():
                 p_leak_locations.remove(bot.get_pos())
             else:
                 break
-            senses += 1
         
         t = moves + senses
     
@@ -423,7 +423,8 @@ class Part1():
                         p_leak_locations.append(cell)
                 leak_detected = True
             else:
-                detection_grid[cell[0]][cell[1]] = 1
+                for cell in cells:
+                    detection_grid[cell[0]][cell[1]] = 1
             senses += 1
         
         while (True):
@@ -435,7 +436,6 @@ class Part1():
                 p_leak_locations.remove(bot.get_pos())
             else:
                 break
-            senses += 1
         
         t = moves + senses
     
@@ -547,7 +547,7 @@ class Part3():
         final_t, visited_nodes = DFS(self.bot_cell, path, self.board, t)
         path = list(visited_nodes.keys())
         path_of_bot = []
-        while (leak_detected != True):
+        while (True):
             bot.set_pos(path.pop(0))
             path_of_bot.append(bot.get_pos())
             
@@ -561,27 +561,27 @@ class Part3():
                     if detection_grid[cell[0]][cell[1]] == 0 and cell != bot.get_pos():
                         detection_grid[cell[0]][cell[1]] = 2
                         p_leak_locations.append(cell)
-                leak_detected = True
+                break
             else:
-                detection_grid[cell[0]][cell[1]] = 1
+                for cell in cells:
+                    detection_grid[cell[0]][cell[1]] = 1
             senses += 1
         moves = visited_nodes[bot.get_pos()]
             
         while (True):
-            path = BFS(bot.get_pos(), p_leak_locations, self.board)
-            bot.set_pos(path.pop(-1))
-            moves += len(path)
+            grid_path = BFS(bot.get_pos(), p_leak_locations, self.board)
+            bot.set_pos(grid_path.pop(-1))
+            moves += len(grid_path)
             path_of_bot.append(bot.get_pos())
-            if any(i != bot.get_pos() for i in leaks):
+            if all(i != bot.get_pos() for i in leaks):
                 p_leak_locations.remove(bot.get_pos())
             else:
                 leaks.remove(bot.get_pos())
                 break
-            senses += 1
         
+        moves += len(BFS(bot.get_pos(), [path[0]], self.board)) - 1
         
-        
-        while (leak_detected != True):
+        while (True):
             bot.set_pos(path.pop(0))
             path_of_bot.append(bot.get_pos())
             
@@ -591,31 +591,31 @@ class Part3():
                     cells.remove(cell)
 
             if any(i in cells for i in leaks):
+                p_leak_locations = []
                 for cell in cells:
                     if detection_grid[cell[0]][cell[1]] == 0 and cell != bot.get_pos():
                         detection_grid[cell[0]][cell[1]] = 2
                         p_leak_locations.append(cell)
-                leak_detected = True
+                break
             else:
-                detection_grid[cell[0]][cell[1]] = 1
+                for cell in cells:
+                    detection_grid[cell[0]][cell[1]] = 1
             senses += 1
         moves = visited_nodes[bot.get_pos()]
         
         while (True):
-            path = BFS(bot.get_pos(), p_leak_locations, self.board)
-            bot.set_pos(path.pop(-1))
-            moves += len(path)
+            grid_path = BFS(bot.get_pos(), p_leak_locations, self.board)
+            bot.set_pos(grid_path.pop(-1))
+            moves += len(grid_path)
             path_of_bot.append(bot.get_pos())
-            if self.leak_cell != bot.get_pos():
+            if all(i != bot.get_pos() for i in leaks):
                 p_leak_locations.remove(bot.get_pos())
             else:
                 leaks.remove(bot.get_pos())
                 break
-            senses += 1
-        
         t = moves + senses
     
-        print(f"bot found leak at {bot.get_pos()} after {t} steps")
+        print(f"bot found leak after {t} steps")
     
         
     
@@ -628,6 +628,7 @@ board.print_ship()
 open_cells = board.get_open_cells()
 part1 = Part1(random.choice(open_cells), random.choice(open_cells), board)
 #part1.Bot1()
+part2 = Part2(random.choice(open_cells), random.choice(open_cells), board)
 #part2.Bot4()
 part3 = Part3(random.choice(open_cells), random.choice(open_cells), random.choice(open_cells), board)
 part3.Bot5()
