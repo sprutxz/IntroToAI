@@ -863,7 +863,7 @@ if(x==3):
         print(K)
         t1_total = 0
         t2_total = 0
-        for i in range(500): #change for total trials
+        for i in range(10): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -881,6 +881,8 @@ if(x==3):
             print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
             t2_total += t2
             print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}")
+        results1[alpha] = t1_total/(i+1)
+        results2[alpha] = t2_total/(i+1)
     
     print("Bot5")
     for key,value in results1.items():
