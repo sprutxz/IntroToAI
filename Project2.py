@@ -785,6 +785,8 @@ Choose a number:
 ''')
 x = int(x)
 if (x == 1):
+    results1 = {}
+    results2 = {}
     for K in range (1,9,2):
         K = K
         print(K)
@@ -805,15 +807,28 @@ if (x == 1):
             t1_total += t1
             print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
             t2_total += t2
-            print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}") 
+            print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}")
+        
+        results1[K] = t1_total/(i+1)
+        results2[K] = t2_total/(i+1)
+        
+    print("Bot1")
+    for key,value in results1.items():
+        print(key + "=>" + value)
+        
+    print("Bot2")
+    for key,value in results1.items():
+        print(key + "=>" + value)
             
 if (x==2):
-    for a in range (50,100,10):
-        alpha = a/1000
+    results1 = {}
+    results2 = {}
+    for a in range (1,10):
+        alpha = a/100
         print(alpha)
         t1_total = 0
         t2_total = 0
-        for i in range(500): #change for total trials
+        for i in range(10): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -829,6 +844,16 @@ if (x==2):
             print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
             t2_total += t2
             print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}") 
+        results1[alpha] = t1_total/(i+1)
+        results2[alpha] = t2_total/(i+1)
+        
+    print("Bot3")
+    for key,value in results1.items():
+        print(key + "=>" + value)
+        
+    print("Bot4")
+    for key,value in results1.items():
+        print(key + "=>" + value)
 
 if(x==3):
     for K in range (0,8,2):
