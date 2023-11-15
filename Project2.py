@@ -9,7 +9,6 @@ import sys
 
 sys.setrecursionlimit(1500)
 getcontext().prec = 50
-random.seed(150)
 D = 50
 #K = 1
 #alpha = 0.3
@@ -577,13 +576,13 @@ class Part3():
             path_of_bot.append(bot.get_pos())
             
             cells = detection_square(bot.get_pos())
-            for cell in cells:
+            for cell in cells[::-1]:
                 if self.board.get_cell_value(cell) == False:
                     cells.remove(cell)
 
             if any(i in cells for i in leaks):
                 for cell in cells:
-                    if detection_grid[cell[0]][cell[1]] == 0 and cell != bot.get_pos():
+                    if detection_grid[cell[0]][cell[1]] == 0:
                         detection_grid[cell[0]][cell[1]] = 2
                         p_leak_locations.append(cell)
                 break
@@ -605,41 +604,42 @@ class Part3():
         
         moves += len(BFS(bot.get_pos(), [path[0]], self.board)) - 1
         
-        while (True):
-            bot.set_pos(path.pop(0))
-            path_of_bot.append(bot.get_pos())
-            
-            cells = detection_square(bot.get_pos())
-            for cell in cells:
-                if self.board.get_cell_value(cell) == False:
-                    cells.remove(cell)
+        if (len(leaks) != 0):
+            while (True):
+                bot.set_pos(path.pop(0))
+                path_of_bot.append(bot.get_pos())
+                
+                cells = detection_square(bot.get_pos())
+                for cell in cells[::-1]:
+                    if self.board.get_cell_value(cell) == False:
+                        cells.remove(cell)
 
-            if any(i in cells for i in leaks):
-                p_leak_locations = []
-                for cell in cells:
-                    if detection_grid[cell[0]][cell[1]] == 0 and cell != bot.get_pos():
-                        detection_grid[cell[0]][cell[1]] = 2
-                        p_leak_locations.append(cell)
-                break
-            else:
-                for cell in cells:
-                    detection_grid[cell[0]][cell[1]] = 1
-            senses += 1
-        moves = visited_nodes[bot.get_pos()]
-        
-        while (True):
-            grid_path = BFS(bot.get_pos(), p_leak_locations, self.board)
-            bot.set_pos(grid_path.pop(-1))
-            moves += len(grid_path)
-            path_of_bot.append(bot.get_pos())
-            if all(i != bot.get_pos() for i in leaks):
-                p_leak_locations.remove(bot.get_pos())
-            else:
-                leaks.remove(bot.get_pos())
-                break
-        t = moves + senses
+                if any(i in cells for i in leaks):
+                    p_leak_locations = []
+                    for cell in cells:
+                        if detection_grid[cell[0]][cell[1]] == 0:
+                            detection_grid[cell[0]][cell[1]] = 2
+                            p_leak_locations.append(cell)
+                    break
+                else:
+                    for cell in cells:
+                        detection_grid[cell[0]][cell[1]] = 1
+                senses += 1
+            moves = visited_nodes[bot.get_pos()]
+            
+            while (True):
+                grid_path = BFS(bot.get_pos(), p_leak_locations, self.board)
+                bot.set_pos(grid_path.pop(-1))
+                moves += len(grid_path)
+                path_of_bot.append(bot.get_pos())
+                if all(i != bot.get_pos() for i in leaks):
+                    p_leak_locations.remove(bot.get_pos())
+                else:
+                    leaks.remove(bot.get_pos())
+                    break
+            t = moves + senses
     
-        print(f"bot found leaks after {t} steps")
+        return t
         
     def Bot6(self):      
         path = {}
@@ -663,7 +663,7 @@ class Part3():
                     break
             
             cells = detection_square(bot.get_pos())
-            for cell in cells:
+            for cell in cells[::-1]:
                 if self.board.get_cell_value(cell) == False:
                     cells.remove(cell)
 
@@ -692,47 +692,47 @@ class Part3():
             else:
                 leaks.remove(bot.get_pos())
         
-        
-        while (True):
-            while(True):
-                move_cell = path.pop(0)
-                if detection_grid[move_cell[0]][move_cell[1]] != 1:
-                    bot.set_pos(move_cell)
-                    path_of_bot.append(bot.get_pos())
-                    moves += len(BFS(bot.get_pos(), [move_cell], self.board))
-                    break
-            
-            cells = detection_square(bot.get_pos())
-            for cell in cells:
-                if self.board.get_cell_value(cell) == False:
-                    cells.remove(cell)
+        if(len(leaks) != 0):
+            while (True):
+                while(True):
+                    move_cell = path.pop(0)
+                    if detection_grid[move_cell[0]][move_cell[1]] != 1:
+                        bot.set_pos(move_cell)
+                        path_of_bot.append(bot.get_pos())
+                        moves += len(BFS(bot.get_pos(), [move_cell], self.board))
+                        break
+                
+                cells = detection_square(bot.get_pos())
+                for cell in cells[::-1]:
+                    if self.board.get_cell_value(cell) == False:
+                        cells.remove(cell)
 
-            if any(i in cells for i in leaks):
-                p_leak_locations = []
-                for cell in cells:
-                    if detection_grid[cell[0]][cell[1]] == 0:
-                        detection_grid[cell[0]][cell[1]] = 2
-                        p_leak_locations.append(cell)
-                break
-            else:
-                for cell in cells:
-                    detection_grid[cell[0]][cell[1]] = 1
-            senses += 1
-        
-        while (True):
-            path = BFS(bot.get_pos(), p_leak_locations, self.board)
-            bot.set_pos(path.pop(-1))
-            moves += len(path)
-            path_of_bot.append(bot.get_pos())
-            if all(i != bot.get_pos() for i in leaks):
-                p_leak_locations.remove(bot.get_pos())
-            else:
-                leaks.remove(bot.get_pos())
-                break
+                if any(i in cells for i in leaks):
+                    p_leak_locations = []
+                    for cell in cells:
+                        if detection_grid[cell[0]][cell[1]] == 0:
+                            detection_grid[cell[0]][cell[1]] = 2
+                            p_leak_locations.append(cell)
+                    break
+                else:
+                    for cell in cells:
+                        detection_grid[cell[0]][cell[1]] = 1
+                senses += 1
+            
+            while (True):
+                path = BFS(bot.get_pos(), p_leak_locations, self.board)
+                bot.set_pos(path.pop(-1))
+                moves += len(path)
+                path_of_bot.append(bot.get_pos())
+                if all(i != bot.get_pos() for i in leaks):
+                    p_leak_locations.remove(bot.get_pos())
+                else:
+                    leaks.remove(bot.get_pos())
+                    break
         
         t = moves + senses
     
-        print(f"bot found leaks after {t} steps")
+        return t
         
     def Bot7(self):
         t = 0
@@ -828,7 +828,7 @@ if (x==2):
         print(alpha)
         t1_total = 0
         t2_total = 0
-        for i in range(1): #change for total trials
+        for i in range(100): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -856,7 +856,7 @@ if (x==2):
         print(f"{key} => {value}")
 
 if(x==3):
-    for K in range (0,8,2):
+    for K in range (1,9,2):
         K = K
         print(K)
         t1_total = 0
@@ -878,7 +878,15 @@ if(x==3):
             t1_total += t1
             print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
             t2_total += t2
-            print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}") 
+            print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}")
+    
+    print("Bot5")
+    for key,value in results1.items():
+        print(f"{key} => {value}")
+        
+    print("Bot6")
+    for key,value in results1.items():
+        print(f"{key} => {value}") 
               
 #part2.Bot3()
 #part2.Bot4()
