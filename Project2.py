@@ -303,26 +303,30 @@ def move(move_cost, probablity_matrix):
     
     return b_cell
 
-def improved_move(move_cost, probability_matrix): #write a condition for equal combined score
-    max_combined_score = -1
-    next_cell = None
+def improved_move(move_cost, probability_matrix):
+    max_cost = 30
+    b_cell = None
+    maxval = None
+    for x, row in enumerate(probability_matrix):
+        for y, val in enumerate(row):
+            if move_cost[x][y] < max_cost:
+                if maxval is None or val > maxval:
+                    indices = [(x,y)]
+                    maxval = val
+                elif val == maxval:
+                    indices.append((x,y))
     
-    for x in range(D):
-        for y in range(D):
-            if probability_matrix[x][y] > 0:  # Consider only cells with non-zero probability
-                distance = move_cost[x][y]
-                probability = probability_matrix[x][y]
-                
-                # Experiment with different weightings for distance and probability
-                combined_score = 0.8 * distance + 5 * probability
-                
-                if combined_score > max_combined_score:
-                    max_combined_score = combined_score
-                    next_cell = (x, y)
+    for cell in indices:
+        if move_cost[cell[0]][cell[1]] < max_cost:
+            max_cost = move_cost[cell[0]][cell[1]]
+            b_cell = cell
+        elif move_cost[cell[0]][cell[1]] == max_cost:
+            if random.random() < 0.5:
+                b_cell = cell
     
-    return next_cell
+    return b_cell
 
-def beep_update(move_cost, probablity_mat):
+def beep_update(move_cost, probablity_mat, val):
     new_matrix = [[0 for j in range(D)] for i in range(D)]
     
     p_beep = sum((probablity_mat[a][b] * math.exp(-alpha * (move_cost[a][b] - 1))) 
@@ -332,7 +336,7 @@ def beep_update(move_cost, probablity_mat):
         for y,cell in enumerate(row):
             if cell != 0:
                 p_beep_leak = math.exp(-alpha * (move_cost[x][y] - 1))
-                new_matrix[x][y] = ((cell * p_beep_leak) / p_beep)
+                new_matrix[x][y] = ((cell * p_beep_leak) / p_beep) * val
      
     return new_matrix
 
@@ -393,7 +397,7 @@ class Part1():
 
             if self.leak_cell in cells:
                 for cell in cells:
-                    if detection_grid[cell[0]][cell[1]] == 0 and cell != bot.get_pos():
+                    if detection_grid[cell[0]][cell[1]] == 0:
                         detection_grid[cell[0]][cell[1]] = 2
                         p_leak_locations.append(cell)
                 leak_detected = True
@@ -487,7 +491,7 @@ class Part2():
             probabilities = bot_movement_update(probabilities, bot.get_pos())
             
             if sense(distance_to_leak):
-                probabilities = beep_update(move_cost, probabilities)     
+                probabilities = beep_update(move_cost, probabilities, 1)     
             else:
                 probabilities = no_beep_update(move_cost, probabilities)
             t += 1
@@ -529,12 +533,11 @@ class Part2():
             senses = sense_list.count(True)
             
             if senses > 0:
-                probabilities = beep_update(move_cost, probabilities)     
+                probabilities = beep_update(move_cost, probabilities, senses/len(sense_list))     
             else:
                 probabilities = no_beep_update(move_cost, probabilities)
                 
             move_cell = move(move_cost, probabilities)
-            move_cell2 = improved_move(move_cost, probabilities)
             
             planned_path = BFS(bot.get_pos(), [move_cell], self.board)
             planned_path.pop(0)
