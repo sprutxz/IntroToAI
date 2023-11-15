@@ -792,7 +792,7 @@ if (x == 1):
         print(K)
         t1_total = 0
         t2_total = 0
-        for i in range(500): #change for total trials
+        for i in range(1): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -814,11 +814,11 @@ if (x == 1):
         
     print("Bot1")
     for key,value in results1.items():
-        print(key + "=>" + value)
+        print(f"{key} => {value}")
         
     print("Bot2")
-    for key,value in results1.items():
-        print(key + "=>" + value)
+    for key,value in results2.items():
+        print(f"{key} => {value}")
             
 if (x==2):
     results1 = {}
@@ -828,7 +828,7 @@ if (x==2):
         print(alpha)
         t1_total = 0
         t2_total = 0
-        for i in range(10): #change for total trials
+        for i in range(1): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -849,11 +849,11 @@ if (x==2):
         
     print("Bot3")
     for key,value in results1.items():
-        print(key + "=>" + value)
+        print(f"{key} => {value}")
         
     print("Bot4")
     for key,value in results1.items():
-        print(key + "=>" + value)
+        print(f"{key} => {value}")
 
 if(x==3):
     for K in range (0,8,2):
@@ -879,9 +879,7 @@ if(x==3):
             print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
             t2_total += t2
             print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}") 
-             
-            
-            
+              
 #part2.Bot3()
 #part2.Bot4()
 #part3 = Part3(random.choice(open_cells), random.choice(open_cells), random.choice(open_cells), board)
