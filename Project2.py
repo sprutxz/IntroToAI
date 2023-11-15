@@ -419,7 +419,7 @@ class Part1():
         
         t = moves + senses
     
-        print(f"bot found leak at {bot.get_pos()} after {t} steps")
+        return t
     
     def Bot2(self):          
         path = {}
@@ -470,7 +470,7 @@ class Part1():
         
         t = moves + senses
     
-        print(f"bot found leak at {bot.get_pos()} after {t} steps")
+        return t
             
 class Part2():
     def __init__(self, bot_cell, leak_cell, board): #initialising values
@@ -785,10 +785,11 @@ Choose a number:
 ''')
 x = int(x)
 if (x == 1):
-    for K in range (0,8,2):
+    for K in range (1,9,2):
         K = K
         print(K)
-        t_total = 0
+        t1_total = 0
+        t2_total = 0
         for i in range(500): #change for total trials
             if i%100 == 0:
                 board = Board(D)
@@ -799,10 +800,12 @@ if (x == 1):
             open_cells.remove(bot_location)
             leak_locaion = random.choice(open_cells)
             part1 = Part1(bot_location, leak_locaion, board)
-            t = part1.Bot1()
-            t_total += t
-            
-            print(f"{i+1}: {t}    avg steps: {t_total/(i+1)}")
+            t1 = part1.Bot1()
+            t2 = part1.Bot2()
+            t1_total += t1
+            print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
+            t2_total += t2
+            print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}") 
             
 if (x==2):
     for a in range (50,100,10):
