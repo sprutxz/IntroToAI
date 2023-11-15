@@ -852,10 +852,12 @@ if (x==2):
         print(f"{key} => {value}")
         
     print("Bot4")
-    for key,value in results1.items():
+    for key,value in results2.items():
         print(f"{key} => {value}")
 
 if(x==3):
+    results1 = {}
+    results2 = {}
     for K in range (1,9,2):
         K = K
         print(K)
@@ -885,7 +887,7 @@ if(x==3):
         print(f"{key} => {value}")
         
     print("Bot6")
-    for key,value in results1.items():
+    for key,value in results2.items():
         print(f"{key} => {value}") 
               
 #part2.Bot3()
