@@ -344,6 +344,100 @@ def bot_movement_update(probablity_mat, bot_pos): #updates probablities after bo
             
     return new_matrix
 
+def multi_beep_update(move_cost, probablity_mat, val):
+    new_matrix = [[[0 for k in range(D*D+1)] for j in range(D)] for i in range(D)]
+    #generates pair
+    pairs = []
+    for x1 in D:
+        for y1 in D:
+            for x2 in D:
+                for y2 in D:
+                    if(((x2,y2),(x1,y1)) not in pairs):
+                        pairs.append(((x1,y1),(x2,y2)))
+                        
+    denominator = 0   
+    i = 1      
+    numerator_list = []
+    #makes a list of numerators to be used later
+    for pair in pairs:
+        x1,y1 = pair[0]
+        x2,y2 = pair[1]
+        
+        numerator = 1-(1-math.exp(-alpha*(move_cost[x1][y1])))*(1-math.exp(-alpha*(move_cost[x2][y2])))*probablity_mat[x1][y1][0]*probablity_mat[x1][y1][i] * val
+        numerator_list.append(numerator)
+        denominator += numerator
+        i+=1
+        if i == 2500:
+            i = 1
+ 
+    i = 0 
+    for x, row in enumerate(new_matrix):
+        for y, z_axis in enumerate(row):
+            sum = 0
+            for z in enumerate(z_axis, start = 1):
+                if(z==0):
+                    new_matrix[x][y][z] = numerator[i]/denominator
+                    new_matrix[z//D][z % D][x*D+y] = new_matrix[x][y][z]
+                sum += new_matrix[x][y][z]  #add to find p(beep)
+                i += 1
+                    
+            new_matrix[x][y][0] = sum
+
+    return new_matrix
+                    
+def multi_no_beep_update(move_cost, probablity_mat):
+    new_matrix = [[[0 for k in range(D*D+1)] for j in range(D)] for i in range(D)]
+    pairs = []
+    #generates pair
+    for x1 in D:
+        for y1 in D:
+            for x2 in D:
+                for y2 in D:
+                    if(((x2,y2),(x1,y1)) not in pairs):
+                        pairs.append(((x1,y1),(x2,y2)))
+    denominator = 0   
+    i = 1      
+    numerator_list = []
+    #makes a list of numerators to be used later
+    for pair in pairs:
+        x1,y1 = pair[0]
+        x2,y2 = pair[1]
+        
+        numerator = (1-math.exp(-alpha*(move_cost[x1][y1])))*(1-math.exp(-alpha*(move_cost[x2][y2])))*probablity_mat[x1][y1][0]*probablity_mat[x1][y1][i]
+        numerator_list.append(numerator)
+        denominator += numerator #add to find p(beep)
+        i+=1
+        if i == 2500:
+            i = 1
+ 
+    i = 0 
+    for x, row in enumerate(new_matrix):
+        for y, z_axis in enumerate(row):
+            sum = 0
+            for z in enumerate(z_axis, start = 1):
+                if(z==0):
+                    new_matrix[x][y][z] = numerator[i]/denominator
+                    new_matrix[z//D][z % D][x*D+y] = new_matrix[x][y][z]
+                sum += new_matrix[x][y][z]
+                i += 1
+                    
+            new_matrix[x][y][0] = sum
+
+    return new_matrix
+    
+def multi_bot_movement_update(probablity_mat, bot_pos):
+    new_matrix = [[[0 for k in range(D*D+1)] for j in range(D)] for i in range(D)]
+    p_x, p_y = bot_pos
+    p = probablity_mat[p_x][p_y][0]
+    
+    for x in D:
+        for y in D:
+            new_matrix[x][y][0] = probablity_mat[x][y][0]/(1-p)
+            
+    new_matrix[p_x][p_y][0] = 0
+
+    return 0
+         
 class Part1():
     def __init__(self, bot_cell, leak_cell, board): #initialising values
         self.bot_cell = bot_cell
@@ -753,7 +847,136 @@ class Part3():
         
         return t     
         
+    def Bot8(self):
+        t = 0
+        bot = Bot(self.bot_cell)
+        total_leaks_found = 0
+        leak = [self.first_leak_cell, self.second_leak_cell]
+        len_open_cells = len(self.board.get_open_cells())
+        probabilities = [[0 if self.board.get_cell_value((i,j)) == False 
+                          else 1 / len_open_cells for j in range(D)] for i in range(D)]
+        
+        while (total_leaks_found<2):
+            move_cost = calculate_distances(self.board, bot.get_pos())
+            distance_to_first_leak = move_cost[self.first_leak_cell[0]][self.first_leak_cell[1]]
+            distance_to_second_leak = move_cost[self.second_leak_cell[0]][self.second_leak_cell[1]]
+            probabilities = multi_bot_movement_update(probabilities, bot.get_pos())
+            
+            if sense_two_leaks(distance_to_first_leak, distance_to_second_leak):
+                probabilities = multi_beep_update(move_cost, probabilities, 1)     
+            else:
+                probabilities = multi_no_beep_update(move_cost, probabilities)
+            t += 1
+                
+            move_cell = move(move_cost, probabilities)
+            
+            planned_path = BFS(bot.get_pos(), [move_cell], self.board)
+            planned_path.pop(0)
+            
+            t += len(planned_path) - 1
+            
+            for i in planned_path:
+                if i in leak:
+                    leak.remove(i)
+                    total_leaks_found += 1
+                    probabilities = multi_bot_movement_update(probabilities, i)
+                    if total_leaks_found == 2:
+                        bot.set_pos(i)
+                else:
+                    probabilities = multi_bot_movement_update(probabilities, i)
+                
+            bot.set_pos(planned_path.pop(-1))   
+        
+        return t    
     
+    def Bot8(self):
+        t = 0
+        bot = Bot(self.bot_cell)
+        total_leaks_found = 0
+        leak = [self.first_leak_cell, self.second_leak_cell]
+        len_open_cells = len(self.board.get_open_cells())
+        probabilities = [[[0 if self.board.get_cell_value((i,j)) == False 
+                          else 1 / len_open_cells for j in range(D*D)] for i in range(D)]for k in range(D)]
+        
+        while (total_leaks_found<2):
+            move_cost = calculate_distances(self.board, bot.get_pos())
+            distance_to_first_leak = move_cost[self.first_leak_cell[0]][self.first_leak_cell[1]]
+            distance_to_second_leak = move_cost[self.second_leak_cell[0]][self.second_leak_cell[1]]
+            probabilities = multi_bot_movement_update(probabilities, bot.get_pos())
+            
+            if sense_two_leaks(distance_to_first_leak, distance_to_second_leak):
+                probabilities = multi_beep_update(move_cost, probabilities, 1)     
+            else:
+                probabilities = multi_no_beep_update(move_cost, probabilities)
+            t += 1
+                
+            move_cell = move(move_cost, probabilities)
+            
+            planned_path = BFS(bot.get_pos(), [move_cell], self.board)
+            planned_path.pop(0)
+            
+            t += len(planned_path) - 1
+            
+            for i in planned_path:
+                if i in leak:
+                    leak.remove(i)
+                    total_leaks_found += 1
+                    probabilities = multi_bot_movement_update(probabilities, i)
+                    if total_leaks_found == 2:
+                        bot.set_pos(i)
+                else:
+                    probabilities = multi_bot_movement_update(probabilities, i)
+                
+            bot.set_pos(planned_path.pop(-1))   
+        
+        return t      
+
+    def Bot9(self):
+        t = 0
+        bot = Bot(self.bot_cell)
+        total_leaks_found = 0
+        leak = [self.first_leak_cell, self.second_leak_cell]
+        len_open_cells = len(self.board.get_open_cells())
+        probabilities = [[[0 if self.board.get_cell_value((i,j)) == False 
+                          else 1 / len_open_cells for j in range(D*D)] for i in range(D)]for k in range(D)]
+        
+        while (total_leaks_found<2):
+            move_cost = calculate_distances(self.board, bot.get_pos())
+            distance_to_first_leak = move_cost[self.first_leak_cell[0]][self.first_leak_cell[1]]
+            distance_to_second_leak = move_cost[self.second_leak_cell[0]][self.second_leak_cell[1]]
+            probabilities = multi_bot_movement_update(probabilities, bot.get_pos())
+            
+            sense_list = []
+            for i in range(4):
+                sense_list.append(sense_two_leaks(distance_to_first_leak, distance_to_second_leak))
+                t += 1
+            senses = sense_list.count(True)
+            if senses > 0:
+                probabilities = multi_beep_update(move_cost, probabilities, 1)     
+            else:
+                probabilities = multi_no_beep_update(move_cost, probabilities)
+            t += 1
+                
+            move_cell = move(move_cost, probabilities)
+            
+            planned_path = BFS(bot.get_pos(), [move_cell], self.board)
+            planned_path.pop(0)
+            
+            t += len(planned_path) - 1
+            
+            for i in planned_path:
+                if i in leak:
+                    leak.remove(i)
+                    total_leaks_found += 1
+                    probabilities = multi_bot_movement_update(probabilities, i)
+                    if total_leaks_found == 2:
+                        bot.set_pos(i)
+                else:
+                    probabilities = multi_bot_movement_update(probabilities, i)
+                
+            bot.set_pos(planned_path.pop(-1))   
+        
+        return t     
 
 x = input( 
 '''1: Bot 1 and 2
@@ -897,10 +1120,3 @@ if(x==4):
     print("Bot7")
     for key,value in results1.items():
         print(f"{key} => {value}")
-
-#part2.Bot3()
-#part2.Bot4()
-#part3 = Part3(random.choice(open_cells), random.choice(open_cells), random.choice(open_cells), board)
-#part3.Bot5()
-#part3.Bot6()
-#part3.Bot7()
