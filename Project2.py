@@ -2,7 +2,7 @@ import random
 import heapq
 import math
 from decimal import *
-#import numpy as np
+import numpy as np
 from collections import deque
 import sys
 
@@ -269,92 +269,69 @@ def calculate_distances(grid, source):
 
     return distances
 
-def sense(distance):
+def sense(distance): #method to leak
     probability_beep = math.exp(-alpha * (distance - 1))
     return (random.random() < probability_beep)
 
-def sense_two_leaks(distance1, distance2):
+def sense_two_leaks(distance1, distance2): #method to sense two leaks
     beep_probablity_1 = math.exp(-alpha * (distance1 - 1))
     beep_probablity_2 = math.exp(-alpha * (distance2 - 1))
     beep_1 = random.random() < beep_probablity_1
     beep_2 = random.random() < beep_probablity_2
     return(beep_1 or beep_2)
     
-def move(move_cost, probablity_matrix):
+def move(move_cost, probablity_matrix): #method to find highest probablity
     max_cost = 99999
     b_cell = None
     maxval = None
     for x, row in enumerate(probablity_matrix):
         for y, val in enumerate(row):
-            if maxval is None or val > maxval:
+            if maxval is None or val > maxval: #update list every time a new max probabliy is discovered
                 indices = [(x,y)]
                 maxval = val
             elif val == maxval:
                 indices.append((x,y))
     
     for cell in indices:
-        if move_cost[cell[0]][cell[1]] < max_cost:
+        if move_cost[cell[0]][cell[1]] < max_cost: #update list every time a new max cost is discovered
             max_cost = move_cost[cell[0]][cell[1]]
             b_cell = cell
-        elif move_cost[cell[0]][cell[1]] == max_cost:
+        elif move_cost[cell[0]][cell[1]] == max_cost: #coe to handle equal distance
             if random.random() < 0.5:
                 b_cell = cell
     
     return b_cell
 
-def improved_move(move_cost, probability_matrix):
-    max_cost = 30
-    b_cell = None
-    maxval = None
-    for x, row in enumerate(probability_matrix):
-        for y, val in enumerate(row):
-            if move_cost[x][y] < max_cost:
-                if maxval is None or val > maxval:
-                    indices = [(x,y)]
-                    maxval = val
-                elif val == maxval:
-                    indices.append((x,y))
-    
-    for cell in indices:
-        if move_cost[cell[0]][cell[1]] < max_cost:
-            max_cost = move_cost[cell[0]][cell[1]]
-            b_cell = cell
-        elif move_cost[cell[0]][cell[1]] == max_cost:
-            if random.random() < 0.5:
-                b_cell = cell
-    
-    return b_cell
-
-def beep_update(move_cost, probablity_mat, val):
+def beep_update(move_cost, probablity_mat, val): #beep updates
     new_matrix = [[0 for j in range(D)] for i in range(D)]
     
     p_beep = sum((probablity_mat[a][b] * math.exp(-alpha * (move_cost[a][b] - 1))) 
-                 for a in range (D) for b in range (D))
+                 for a in range (D) for b in range (D)) #calculate P(beep in bot location)
     
     for x,row in enumerate(probablity_mat):
         for y,cell in enumerate(row):
             if cell != 0:
-                p_beep_leak = math.exp(-alpha * (move_cost[x][y] - 1))
-                new_matrix[x][y] = ((cell * p_beep_leak) / p_beep) * val
+                p_beep_leak = math.exp(-alpha * (move_cost[x][y] - 1))  #calculate P(beep in bot location | leak in j)
+                new_matrix[x][y] = ((cell * p_beep_leak) / p_beep) * val #calculation of P(beep in bot | leak in j) *P(leak in j) / P(beep in bot)
      
     return new_matrix
 
-def no_beep_update(move_cost, probablity_mat):
+def no_beep_update(move_cost, probablity_mat): #no_beep_update
     new_matrix = [[0 for j in range(D)] for i in range(D)]
     
     p_beep = sum((probablity_mat[a][b] * math.exp(-alpha * (move_cost[a][b] - 1)))
-                 for a in range (D) for b in range (D))
+                 for a in range (D) for b in range (D)) #calculate P(beep in bot location)
     
-    p_no_beep = 1-p_beep
+    p_no_beep = 1-p_beep #calculate P(beep in not in bot location)
     
     for x,row in enumerate(probablity_mat):
         for y,cell in enumerate(row):
             if cell != 0 and move_cost[x][y] != 0:
-                p_beep_leak = 1 - (math.exp(-alpha * (move_cost[x][y] - 1)))
-                new_matrix[x][y] = (cell * p_beep_leak) / p_no_beep     
+                p_no_beep_leak = 1 - (math.exp(-alpha * (move_cost[x][y] - 1))) #calculate P(no beep in bot location| leak in j)
+                new_matrix[x][y] = (cell * p_no_beep_leak) / p_no_beep  #calculation of P(no beep in bot | leak in j) *P(leak in j) / P(beep in bot)
     return new_matrix
-
-def bot_movement_update(probablity_mat, bot_pos):
+    
+def bot_movement_update(probablity_mat, bot_pos): #updates probablities after bot moves to a new square
     new_matrix = [[0 for j in range(D)] for i in range(D)]
     p_x, p_y = bot_pos
     p = probablity_mat[p_x][p_y]
@@ -740,8 +717,8 @@ class Part3():
         total_leaks_found = 0
         leak = [self.first_leak_cell, self.second_leak_cell]
         len_open_cells = len(self.board.get_open_cells())
-        probabilities = [[Decimal('0.0') if self.board.get_cell_value((i,j)) == False 
-                          else 1 / Decimal(str(len_open_cells)) for j in range(D)] for i in range(D)]
+        probabilities = [[0 if self.board.get_cell_value((i,j)) == False 
+                          else 1 / len_open_cells for j in range(D)] for i in range(D)]
         
         while (total_leaks_found<2):
             move_cost = calculate_distances(self.board, bot.get_pos())
@@ -763,7 +740,7 @@ class Part3():
             t += len(planned_path) - 1
             
             for i in planned_path:
-                if any(i in [leak]):
+                if i in leak:
                     leak.remove(i)
                     total_leaks_found += 1
                     probabilities = bot_movement_update(probabilities, i)
@@ -772,7 +749,9 @@ class Part3():
                 else:
                     probabilities = bot_movement_update(probabilities, i)
                 
-            bot.set_pos(planned_path.pop(-1))        
+            bot.set_pos(planned_path.pop(-1))   
+        
+        return t     
         
     
 
@@ -792,7 +771,7 @@ if (x == 1):
         print(K)
         t1_total = 0
         t2_total = 0
-        for i in range(500): #change for total trials
+        for i in range(1): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -823,12 +802,12 @@ if (x == 1):
 if (x==2):
     results1 = {}
     results2 = {}
-    for a in range (1,20,2):
-        alpha = a/200
+    for a in range (1,10):
+        alpha = a/100
         print(alpha)
         t1_total = 0
         t2_total = 0
-        for i in range(500): #change for total trials
+        for i in range(100): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -863,7 +842,7 @@ if(x==3):
         print(K)
         t1_total = 0
         t2_total = 0
-        for i in range(500): #change for total trials
+        for i in range(10): #change for total trials
             if i%100 == 0:
                 board = Board(D)
                 board.open_ship()
@@ -881,8 +860,8 @@ if(x==3):
             print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
             t2_total += t2
             print(f"{i+1}: {t2}    avg steps: {t2_total/(i+1)}")
-        results1[K] = t1_total/(i+1)
-        results2[K] = t2_total/(i+1)
+        results1[alpha] = t1_total/(i+1)
+        results2[alpha] = t2_total/(i+1)
     
     print("Bot5")
     for key,value in results1.items():
@@ -892,6 +871,33 @@ if(x==3):
     for key,value in results2.items():
         print(f"{key} => {value}") 
               
+if(x==4):
+    results1 = {}
+    for a in range (1,10):
+        alpha = a/100
+        print(alpha)
+        t1_total = 0
+        for i in range(10): #change for total trials
+            if i%100 == 0:
+                board = Board(D)
+                board.open_ship()
+                board.clear_dead_cells()
+            open_cells = board.get_open_cells()
+            bot_location = random.choice(open_cells)
+            open_cells.remove(bot_location)
+            first_leak_locaion = random.choice(open_cells)
+            open_cells.remove(first_leak_locaion)
+            second_leak_location = random.choice(open_cells)
+            part3 = Part3(bot_location, first_leak_locaion, second_leak_location, board)
+            t1 = part3.Bot7()
+            t1_total += t1
+            print(f"{i+1}: {t1}    avg steps: {t1_total/(i+1)}") 
+        results1[alpha] = t1_total/(i+1)
+    
+    print("Bot7")
+    for key,value in results1.items():
+        print(f"{key} => {value}")
+
 #part2.Bot3()
 #part2.Bot4()
 #part3 = Part3(random.choice(open_cells), random.choice(open_cells), random.choice(open_cells), board)
