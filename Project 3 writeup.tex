@@ -35,9 +35,14 @@ We numbered the wires as follows:
     \end{enumerate}
 \end{quote}
 
-\noindent Input Space:\newline
-Output Space:\newline
-Model space:\newline
+\noindent The input space for my model is a 20x20 grid of pixels which are one hot encoded to represent the color of the wire.
+This ressults into a feature vector of 1600 elements being 0 or 1.\newline
+\newline The output space for my model is a vector of 4 elements, each representing the probability of the wire being cut using the softmax function.
+The wire with the highest probability is outputted as the wire to cut.\newline
+\newline The model space is the input space plus 4 quadratic features and 2 exponential features.
+The quadratic features were obtained by first finding the total pixels each wire color occupies on the diagram. This was then passed through the function $(| x - 19 | + 2)^2$.
+The exponential features weere btained by considering the wires that occupied 19 pixels and then finding what wire color was present at the intersesction of these two wires. 
+This was one hot encoded and then passed through the function $e^{x}$.\newline
 \newline The loss on my model is measured through the categorical cross entropy loss function. 
 This loss function is used to measure the error between the predicted output and the actual output. The categorical cross entropy loss function is defined as follows:
 \begin{equation}
