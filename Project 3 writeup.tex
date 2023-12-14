@@ -23,10 +23,18 @@ We numbered the wires as follows:
     \item Yellow
     \item Green
     \end{enumerate}
-    \end{quote}
+\end{quote}
 
-Our input space 
+\noindent Input Space:\newline
+Output Space:\newline
+Model space:\newline
+\newline The loss on my model is measured through the categorical cross entropy loss function. 
+This loss function is used to measure the error between the predicted output and the actual output. The categorical cross entropy loss function is defined as follows:
+\begin{equation}
+    CE = -\sum_{i=1}^{N} y_{i} \log(\hat{y}_{i})
+\end{equation}
 
+\noindent Here, $y$ is the actual output and $\hat{y}$ is the predicted output. $N$ is the number of data points we have
 \section*{Bonus}
 
 \end{document}
