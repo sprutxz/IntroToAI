@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1702571019 "c:/Users/leroy/OneDrive/Documents/IntroToAI/Project 3 writeup.tex" "Project 3 writeup.pdf" "Project 3 writeup" 1702571020 0
+["pdflatex"] 1702581622 "c:/Users/leroy/OneDrive/Documents/IntroToAI/Project 3 writeup.tex" "Project 3 writeup.pdf" "Project 3 writeup" 1702581623 0
   "C:/Users/leroy/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1702567578 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/leroy/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1702566248 24224316 4b2554b8c41fd944081459da49d10dbd ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmbx12.tfm" 1136765053 1324 c910af8c371558dc20f2d7822f66fe64 ""
@@ -22,6 +22,7 @@
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1247596666 32362 bc3f3eec7ab7d65fe700963d4017d32c ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb" 1247596667 32762 7fee39e011c23b3589931effd97b9702 ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1247596667 32569 5e5ddc8df908dea60932f3c484a54c0d ""
+  "C:/Users/leroy/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb" 1247596666 32716 08e384dc442464e7285e891af9f45947 ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.mkii" 1580390158 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/tex/latex/00miktex/epstopdf-sys.cfg" 1616067285 584 2a1075dd71571459f59146da9f7502ad ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/tex/latex/base/article.cls" 1698826601 20144 fbcf51733730d8f1a62143512ff5b1fe ""
@@ -34,9 +35,9 @@
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/tex/latex/graphics/keyval.sty" 1665067579 2671 7e67d78d9b88c845599a85b2d41f2e39 ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/tex/latex/graphics/trig.sty" 1665067579 4023 293ea1c16429fc0c4cf605f4da1791a9 ""
   "C:/Users/leroy/AppData/Local/Programs/MiKTeX/tex/latex/l3backend/l3backend-pdftex.def" 1699552361 29988 6d57d2b884f7464419678df319af86d2 ""
-  "Project 3 writeup.aux" 1702571019 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
-  "Project 3 writeup.tex" 1702571019 1389 2b5f389b3160e888fa0baba7b383225b ""
-  "c:/Users/leroy/OneDrive/Documents/IntroToAI/Project 3 writeup.tex" 1702571019 1389 2b5f389b3160e888fa0baba7b383225b ""
+  "Project 3 writeup.aux" 1702581623 32 044b7f8fc9779af7531264e0c5c84b6d "pdflatex"
+  "Project 3 writeup.tex" 1702581534 3430 bdab51cfd7ed6dca67aa268b330f25b8 ""
+  "c:/Users/leroy/OneDrive/Documents/IntroToAI/Project 3 writeup.tex" 1702581534 3430 bdab51cfd7ed6dca67aa268b330f25b8 ""
   (generated)
   "Project 3 writeup.aux"
   "Project 3 writeup.log"
