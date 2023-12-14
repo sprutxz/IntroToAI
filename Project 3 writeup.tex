@@ -9,11 +9,19 @@
 \maketitle
 
 \section*{The First Task}
-Hi this is a test
+    The first task is logistic regression problem using the binary cross entropy loss function. The model we created outputs a probability of whether the diagram is either dangerous or safe. 
+    This probability is then compared with the threshold of 0.5 where a probability below is predicts the diagram to be safe and a probability above 0.5 predicts the diagram to be dangerous.
+    In order to gather the input data (diagrams), we generated matrices of size 20 by 20 and randomly chose to put down a wire first as a row or col. Subsequently, we added the wires in randomly, 
+    alternating wires being put as rows or columns. Each one of the pixels within the diagram were described in the form of a vector in the form of [A, B, C, D] where for each color, one of the variables (A, B, C, or D) 
+    would be 1 and the others would be 0. We then flattened the diagram of 20 x 20 = 400 pixels and we got an array of length 1600 where every 4 values describes the color of each pixel. We then added the non-linear features
+    to this feature array. \newline
 
+    The non-linear features we added to the model of the first task were constants that represented the percentage of each wire that still remained of the original color. Alternatively, it could be described as a representation 
+    of how much each wire had been overlapped with other color wires. The idea behind this features was to create features that gave the model a more concrete idea of when each wire was placed relative to every other wire. 
+    These features, in turn, would theoretically allow it to predict whether certain wires were placed before others with higher accuracy. 
 \section*{The Second Task}
 The second task involved a multinomial classification problem where we had to determine, on a given dangerous wire diagram, which wire to cut.
-To fullfill this purpose, we used a softmax regression model that output a number for the wire to be cut. The right wire to be cut, as stated in the project 3 writeup, would be te 3rd wire to be placed down.\newline
+To fulfill this purpose, we used a softmax regression model that output a number for the wire to be cut. The right wire to be cut, as stated in the project 3 writeup, would be te 3rd wire to be placed down.\newline
 \newline
 We numbered the wires as follows:
 \begin{quote}
